@@ -1,0 +1,398 @@
+{
+  "cams": [
+    {
+      "id": "iss-hd",
+      "name": "Earth from the ISS · NASA Live",
+      "category": "space",
+      "type": "livestream",
+      "lat": 0,
+      "lng": 0,
+      "description": "NASA's official live feed from the International Space Station, orbiting Earth at ~400km, ~16 times per day. Goes black on the night side and during signal dropouts.",
+      "thumbnail": null,
+      "stream": "https://www.youtube.com/watch?v=DIgkvm2nmHc"
+    },
+    {
+      "id": "spacex-starbase",
+      "name": "SpaceX Starbase · Boca Chica",
+      "category": "space",
+      "type": "livestream",
+      "lat": 25.997,
+      "lng": -97.156,
+      "description": "LabPadre's 24/7 live feeds of SpaceX's Starship development site. Multiple angles on rocket assembly and test flights.",
+      "thumbnail": null,
+      "stream": "https://www.youtube.com/@LabPadre/streams"
+    },
+    {
+      "id": "kilauea",
+      "name": "Kīlauea · USGS Webcams",
+      "category": "volcano",
+      "type": "live-image",
+      "lat": 19.4069,
+      "lng": -155.2834,
+      "description": "USGS Hawaiian Volcano Observatory hosts multiple thermal and visual cameras at the Halemaʻumaʻu crater. Refreshing still images, glowing red during eruptions.",
+      "thumbnail": null,
+      "stream": "https://www.usgs.gov/observatories/hvo/multimedia-webcams"
+    },
+    {
+      "id": "mauna-loa",
+      "name": "Mauna Loa · USGS Webcams",
+      "category": "volcano",
+      "type": "live-image",
+      "lat": 19.4756,
+      "lng": -155.6052,
+      "description": "USGS still cameras pointed across the Mokuʻāweoweo summit caldera of the world's largest active volcano.",
+      "thumbnail": null,
+      "stream": "https://www.usgs.gov/observatories/hvo/multimedia-webcams"
+    },
+    {
+      "id": "etna",
+      "name": "Mount Etna · INGV",
+      "category": "volcano",
+      "type": "info-page",
+      "lat": 37.751,
+      "lng": 14.9934,
+      "description": "Istituto Nazionale di Geofisica e Vulcanologia hosts live thermal and visible-light cameras on Europe's most active volcano. Frequent visible eruptions and lava flows.",
+      "thumbnail": null,
+      "stream": "https://www.ct.ingv.it/index.php/monitoraggio-e-sorveglianza/prodotti-del-monitoraggio/sorveglianza-vulcanica/segnali-in-tempo-reale/segnali-video"
+    },
+    {
+      "id": "stromboli",
+      "name": "Stromboli · Aeolian Islands",
+      "category": "volcano",
+      "type": "info-page",
+      "lat": 38.7894,
+      "lng": 15.2128,
+      "description": "INGV cams on the continuously-active strombolian eruptions — small bursts every 10-20 minutes, day and night. The lighthouse of the Mediterranean.",
+      "thumbnail": null,
+      "stream": "https://www.ct.ingv.it/index.php/monitoraggio-e-sorveglianza/prodotti-del-monitoraggio/sorveglianza-vulcanica/segnali-in-tempo-reale/segnali-video"
+    },
+    {
+      "id": "old-faithful",
+      "name": "Old Faithful · Yellowstone",
+      "category": "geothermal",
+      "type": "info-page",
+      "lat": 44.4605,
+      "lng": -110.8281,
+      "description": "NPS hosts a live cam page for Yellowstone's most famous geyser, which erupts every 90 minutes ± 10. The page lists current eruption predictions.",
+      "thumbnail": null,
+      "stream": "https://www.nps.gov/yell/learn/photosmultimedia/webcams.htm"
+    },
+    {
+      "id": "auroramax",
+      "name": "AuroraMAX · Yellowknife",
+      "category": "aurora",
+      "type": "seasonal",
+      "seasonalNote": "Best Sept-April nights. Often offline during the bright summer months.",
+      "lat": 62.454,
+      "lng": -114.3718,
+      "description": "Canadian Space Agency live all-sky camera in the auroral oval at Yellowknife, NWT. Most spectacular during dark winter nights when the Kp index spikes.",
+      "thumbnail": null,
+      "stream": "https://auroramax.com/live"
+    },
+    {
+      "id": "africam-tembe",
+      "name": "Tembe Elephant Park · Africam",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": -26.95,
+      "lng": 32.45,
+      "description": "Live cam at a watering hole in Tembe Elephant Park, KwaZulu-Natal, South Africa. Elephants, leopards, lions visible especially at dawn and dusk.",
+      "thumbnail": null,
+      "stream": "https://www.africam.com/wildlife/tembe_elephant_park_live_channel"
+    },
+    {
+      "id": "africam-nkorho",
+      "name": "Nkorho Bush Lodge · Sabi Sand",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": -24.7833,
+      "lng": 31.4833,
+      "description": "Sabi Sand Game Reserve, South Africa. Big Five regularly visit the watering hole.",
+      "thumbnail": null,
+      "stream": "https://www.africam.com/wildlife/nkorho_pan_live_channel"
+    },
+    {
+      "id": "katmai-bears",
+      "name": "Brooks Falls Brown Bears · Katmai NP",
+      "category": "wildlife",
+      "type": "seasonal",
+      "seasonalNote": "Live June-October during the salmon run. Offline in winter.",
+      "lat": 58.5642,
+      "lng": -155.7773,
+      "description": "Explore.org's famous live cam of brown bears catching salmon mid-air at Brooks Falls, Alaska. Featured in Fat Bear Week each fall.",
+      "thumbnail": null,
+      "stream": "https://explore.org/livecams/brown-bears/brown-bear-salmon-cam-brooks-falls"
+    },
+    {
+      "id": "puffin-iceland",
+      "name": "Atlantic Puffin Colony · Heimaey",
+      "category": "wildlife",
+      "type": "seasonal",
+      "seasonalNote": "Best April-August during nesting season.",
+      "lat": 63.4322,
+      "lng": -20.2839,
+      "description": "Live cam on the Westman Islands during the Atlantic Puffin breeding season — Iceland hosts ~60% of the world's puffin population.",
+      "thumbnail": null,
+      "stream": "https://www.visitvestmannaeyjar.is/en/puffin-camera"
+    },
+    {
+      "id": "abbey-road",
+      "name": "Abbey Road Studios Crossing · London",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 51.532,
+      "lng": -0.1779,
+      "description": "Live view of the famous Beatles album cover crossing on Abbey Road. Tourists pose hourly, 24/7.",
+      "thumbnail": null,
+      "stream": "https://www.abbeyroad.com/crossing"
+    },
+    {
+      "id": "times-square",
+      "name": "Times Square · NYC",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 40.758,
+      "lng": -73.9855,
+      "description": "EarthCam's livestream from the Crossroads of the World — Broadway and 7th Avenue.",
+      "thumbnail": null,
+      "stream": "https://www.earthcam.com/usa/newyork/timessquare/"
+    },
+    {
+      "id": "venice-rialto",
+      "name": "Grand Canal · Rialto Bridge, Venice",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 45.438,
+      "lng": 12.3358,
+      "description": "Skyline Webcams livestream of the Grand Canal at the Rialto Bridge, Venice's busiest waterway.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/italia/veneto/venezia/canal-grande-rialto.html"
+    },
+    {
+      "id": "niagara",
+      "name": "Niagara Falls · Horseshoe Falls",
+      "category": "nature",
+      "type": "info-page",
+      "lat": 43.0792,
+      "lng": -79.0747,
+      "description": "Multiple live cams of the Canadian (Horseshoe) Falls — 2,400 cubic meters of water per second.",
+      "thumbnail": null,
+      "stream": "https://www.niagarafallslive.com/"
+    },
+    {
+      "id": "mauna-kea-subaru",
+      "name": "Mauna Kea · Subaru Telescope",
+      "category": "astronomy",
+      "type": "live-image",
+      "lat": 19.8232,
+      "lng": -155.4731,
+      "description": "Subaru Observatory still cam at 4,200m on the world's most powerful astronomical site. Image refreshes throughout each Hawaiian night.",
+      "thumbnail": null,
+      "stream": "https://www.subarutelescope.org/Outreach/cam/mko/"
+    },
+    {
+      "id": "antarctica-mcmurdo",
+      "name": "McMurdo Station · Antarctica",
+      "category": "polar",
+      "type": "live-image",
+      "seasonalNote": "Image is dark from May through August (Antarctic winter).",
+      "lat": -77.85,
+      "lng": 166.67,
+      "description": "USAP refreshing still cam of the largest Antarctic research base. Stays in continuous darkness throughout austral winter.",
+      "thumbnail": null,
+      "stream": "https://www.usap.gov/videoclipsandmaps/mcmwebcam.cfm"
+    },
+    {
+      "id": "panda-cam",
+      "name": "Smithsonian Giant Panda Cam · Washington DC",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": 38.9296,
+      "lng": -77.0494,
+      "description": "Smithsonian's National Zoo live cam on the giant pandas. Most active during morning feeding times.",
+      "thumbnail": null,
+      "stream": "https://nationalzoo.si.edu/webcams/panda-cam"
+    },
+    {
+      "id": "san-diego-zoo",
+      "name": "San Diego Zoo · Multi-cam",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": 32.7353,
+      "lng": -117.1488,
+      "description": "Multiple live cams across San Diego Zoo — penguins, baboons, polar bears, koalas, tigers.",
+      "thumbnail": null,
+      "stream": "https://zoo.sandiegozoo.org/live-cams"
+    },
+
+    {
+      "id": "sakurajima",
+      "name": "Sakurajima · Kagoshima, Japan",
+      "category": "volcano",
+      "type": "livestream",
+      "lat": 31.5825,
+      "lng": 130.6583,
+      "description": "Skyline Webcams view of Japan's most active volcano across Kagoshima Bay. Frequent ash plumes — sometimes hourly.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/japan/kagoshima/sakurajima-volcano-and-port-of-kagoshima.html"
+    },
+    {
+      "id": "yasur",
+      "name": "Mount Yasur · Vanuatu",
+      "category": "volcano",
+      "type": "info-page",
+      "lat": -19.5283,
+      "lng": 169.4422,
+      "description": "Tanna Island, Vanuatu. Continuously active for at least 800 years — visible strombolian eruptions every few minutes. VolcanoDiscovery aggregates current cam feeds.",
+      "thumbnail": null,
+      "stream": "https://www.volcanodiscovery.com/yasur/webcams.html"
+    },
+    {
+      "id": "reykjanes",
+      "name": "Reykjanes · Iceland",
+      "category": "volcano",
+      "type": "livestream",
+      "lat": 63.8908,
+      "lng": -22.27,
+      "description": "Live from Iceland's Reykjanes peninsula, site of the 2021–2024 Fagradalsfjall and Sundhnúkur eruptions. Multi-camera stream from RÚV / Iceland's broadcaster.",
+      "thumbnail": null,
+      "stream": "https://www.livefromiceland.is/webcams/reykjanes/"
+    },
+    {
+      "id": "erebus",
+      "name": "Mount Erebus · Antarctica",
+      "category": "volcano",
+      "type": "info-page",
+      "lat": -77.5295,
+      "lng": 167.1587,
+      "description": "Earth's southernmost active volcano, with a persistent lava lake. Mount Erebus Volcano Observatory monitoring page.",
+      "thumbnail": null,
+      "stream": "https://erebus.nmt.edu/cameras"
+    },
+    {
+      "id": "klyuchevskoy",
+      "name": "Klyuchevskoy · Kamchatka",
+      "category": "volcano",
+      "type": "info-page",
+      "lat": 56.0563,
+      "lng": 160.6422,
+      "description": "Eurasia's tallest active volcano (4,750m) on Russia's Kamchatka peninsula. KVERT (Kamchatkan Volcanic Eruption Response Team) cam network.",
+      "thumbnail": null,
+      "stream": "http://geoportal.kscnet.ru/volcanoes/imgvolc/klyuchgrp.php"
+    },
+
+    {
+      "id": "polar-bears-churchill",
+      "name": "Polar Bears · Churchill, Manitoba",
+      "category": "wildlife",
+      "type": "seasonal",
+      "seasonalNote": "Live October-November during the bear migration to Hudson Bay sea ice. Offline rest of year.",
+      "lat": 58.7684,
+      "lng": -94.1647,
+      "description": "Explore.org's iconic Tundra Buggy cam at Churchill — bears gather here each fall waiting for the Hudson Bay ice to form so they can hunt seals.",
+      "thumbnail": null,
+      "stream": "https://explore.org/livecams/polar-bears/polar-bears-churchill-manitoba"
+    },
+    {
+      "id": "petes-pond",
+      "name": "Pete's Pond · Mashatu Game Reserve",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": -22.16,
+      "lng": 29.13,
+      "description": "Iconic waterhole in Mashatu, eastern Botswana. Elephants, leopards, lions, hyenas — most active at dawn and dusk.",
+      "thumbnail": null,
+      "stream": "https://explore.org/livecams/african-wildlife/petes-pond-african-wildlife-camera"
+    },
+    {
+      "id": "monterey-kelp",
+      "name": "Kelp Forest · Monterey Bay Aquarium",
+      "category": "wildlife",
+      "type": "livestream",
+      "lat": 36.6181,
+      "lng": -121.9015,
+      "description": "Two-storey kelp forest exhibit with sardines, leopard sharks, sea bass and the occasional otter passing through.",
+      "thumbnail": null,
+      "stream": "https://www.montereybayaquarium.org/animals/live-cams/kelp-forest-cam"
+    },
+    {
+      "id": "bimini-sharks",
+      "name": "Bimini Shark Lab · Bahamas",
+      "category": "wildlife",
+      "type": "info-page",
+      "lat": 25.7203,
+      "lng": -79.2853,
+      "description": "Long-running shark research field station founded by Dr. Samuel Gruber. Live and recorded footage of nurse, lemon, and hammerhead sharks.",
+      "thumbnail": null,
+      "stream": "https://www.biminisharklab.com/"
+    },
+    {
+      "id": "decorah-eagles",
+      "name": "Decorah Bald Eagles · Iowa",
+      "category": "wildlife",
+      "type": "seasonal",
+      "seasonalNote": "Most active January-July during nesting and fledging.",
+      "lat": 43.3186,
+      "lng": -91.7857,
+      "description": "Famous bald-eagle nest cam at the Raptor Resource Project hatchery — millions of viewers watch each spring's eaglets fledge.",
+      "thumbnail": null,
+      "stream": "https://www.raptorresource.org/birdcams/decorah-eagles/"
+    },
+
+    {
+      "id": "eiffel-tower",
+      "name": "Eiffel Tower · Paris",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 48.8584,
+      "lng": 2.2945,
+      "description": "Skyline Webcams' panoramic live view of the Eiffel Tower over the Seine.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/france/ile-de-france/paris/tour-eiffel.html"
+    },
+    {
+      "id": "tower-bridge",
+      "name": "Tower Bridge · London",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 51.5055,
+      "lng": -0.0754,
+      "description": "Live view across the Thames at Tower Bridge — bascules raise periodically for tall ships.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/united-kingdom/england/london/tower-bridge.html"
+    },
+    {
+      "id": "bondi-beach",
+      "name": "Bondi Beach · Sydney",
+      "category": "urban",
+      "type": "livestream",
+      "lat": -33.8908,
+      "lng": 151.2743,
+      "description": "Live look at Australia's most famous beach — surf and sun in real time, Sydney's eastern suburbs.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/australia/new-south-wales/sydney/bondi-beach.html"
+    },
+    {
+      "id": "marina-bay",
+      "name": "Marina Bay · Singapore",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 1.2839,
+      "lng": 103.8607,
+      "description": "Marina Bay Sands and the Singapore skyline — light show every evening at 8 and 9 PM SGT.",
+      "thumbnail": null,
+      "stream": "https://www.skylinewebcams.com/en/webcam/singapore/singapore/singapore/marina-bay-sands.html"
+    },
+    {
+      "id": "hollywood-walk",
+      "name": "Hollywood Walk of Fame · Los Angeles",
+      "category": "urban",
+      "type": "livestream",
+      "lat": 34.1015,
+      "lng": -118.3416,
+      "description": "EarthCam's live cam at Hollywood Boulevard. Premieres, costumed performers, and tourist crowds.",
+      "thumbnail": null,
+      "stream": "https://www.earthcam.com/usa/california/hollywood/"
+    }
+  ]
+}
