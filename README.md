@@ -2,7 +2,7 @@
 
 **Live demo → [earthpulse-teal.vercel.app](https://earthpulse-teal.vercel.app/?m=live)**
 
-<video src="https://github.com/nishanth-vincent1/earthpulse/raw/main/public/screenshots/hero.mp4" controls autoplay loop muted playsinline width="100%"></video>
+<video src="https://github.com/user-attachments/assets/2fa9fbb6-2d41-4da9-a758-62bf580f47b5" controls autoplay loop muted playsinline width="100%"></video>
 
 A 3D globe that overlays real-time and historical planetary data from **30+ public APIs** — earthquakes, ocean buoys, aircraft, animal sightings, aurora, submarine cables, news headlines, exoplanets and more — into a single explorable surface. Built with Next.js + react-globe.gl.
 
