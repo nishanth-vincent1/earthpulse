@@ -21,6 +21,14 @@ body {
   color: var(--foreground);
 }
 
+.g-icon {
+  touch-action: manipulation;
+}
+
+.mobile-panel-open .g-icon {
+  display: none;
+}
+
 @keyframes pulse-ring {
   0% {
     transform: scale(0.6);

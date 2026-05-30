@@ -1942,7 +1942,11 @@ export default function LivingEarth() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      <div className="absolute inset-0">
+      <div
+        className={`absolute inset-0 ${
+          isMobile && (selection || layersDrawerOpen) ? "mobile-panel-open" : ""
+        }`}
+      >
         {size.w > 0 && (
           <Globe
             ref={globeEl}
@@ -2056,10 +2060,11 @@ export default function LivingEarth() {
                                           ? 0.005
                                           : 0.01
             }
-            pointRadius={(d: any) =>
-              d.kind === "aircraft"
-                ? 0.28
-                : d.kind === "launch"
+            pointRadius={(d: any) => {
+              const base =
+                d.kind === "aircraft"
+                  ? 0.28
+                  : d.kind === "launch"
                     ? 0.7
                     : d.kind === "storm"
                       ? 0.9
@@ -2089,8 +2094,9 @@ export default function LivingEarth() {
                                         ? Math.max(0.3, Math.min(0.8, d.aqi / 200))
                                         : d.kind === "ship"
                                           ? 0.18
-                                          : 0.35
-            }
+                                          : 0.35;
+              return isMobile ? base * 1.6 : base;
+            }}
             pointLabel={(d: any) => {
               if (d.kind === "aircraft") {
                 const alt = Math.round((d.altM ?? 0) / 304.8);
@@ -2274,7 +2280,7 @@ export default function LivingEarth() {
                     inner.style.filter =
                       "drop-shadow(0 0 6px rgba(0,0,0,0.6))";
                   });
-                  inner.addEventListener("click", (ev) => {
+                  inner.addEventListener("pointerup", (ev) => {
                     ev.stopPropagation();
                     iconClickedAt.current = Date.now();
                     selectIss(d as ISS);
@@ -2296,7 +2302,7 @@ export default function LivingEarth() {
                   innerEl.addEventListener("mouseleave", () => {
                     innerEl.style.transform = "translate(-50%,-50%) scale(1)";
                   });
-                  innerEl.addEventListener("click", (ev) => {
+                  innerEl.addEventListener("pointerup", (ev) => {
                     ev.stopPropagation();
                     iconClickedAt.current = Date.now();
                     selectStar(d as Star);
@@ -2314,7 +2320,7 @@ export default function LivingEarth() {
                   inner.addEventListener("mouseleave", () => {
                     inner.style.transform = "translate(-50%,-50%) scale(1)";
                   });
-                  inner.addEventListener("click", (ev) => {
+                  inner.addEventListener("pointerup", (ev) => {
                     ev.stopPropagation();
                     iconClickedAt.current = Date.now();
                     selectSun({ lat: d.lat, lng: d.lng });
@@ -2398,7 +2404,7 @@ export default function LivingEarth() {
                     inner.style.filter =
                       "drop-shadow(0 0 6px rgba(0,0,0,0.6))";
                   });
-                  inner.addEventListener("click", (ev) => {
+                  inner.addEventListener("pointerup", (ev) => {
                     ev.stopPropagation();
                     iconClickedAt.current = Date.now();
                     if (d.kind === "event") selectEvent(d as EONETEvent);
