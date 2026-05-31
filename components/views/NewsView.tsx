@@ -15,7 +15,7 @@ export function NewsView({ group }: { group: NewsGroup }) {
         📰 Headlines · {group.country}
       </div>
       <h2 className="text-2xl font-light text-white mt-1">
-        {group.count} stories trending
+        {group.count} {group.count === 1 ? "story" : "stories"} trending
       </h2>
       <div className="text-white/50 text-sm mt-1">
         from {group.country} via the GDELT global news graph

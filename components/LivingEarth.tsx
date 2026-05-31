@@ -2364,6 +2364,22 @@ export default function LivingEarth() {
                     ? `<span style="position:absolute;bottom:-4px;right:-4px;font-size:11px;line-height:1;background:rgba(0,0,0,0.85);border:1px solid rgba(244,114,182,0.7);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center">${d._icon}</span>`
                     : "";
                 el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:1.5px solid ${borderColor};box-shadow:0 0 6px rgba(0,0,0,0.7),0 0 0 2px rgba(0,0,0,0.6);background:#222 center/cover url('${src}');cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto">${badge}</div>`;
+              } else if (d.kind === "news") {
+                const tone = (d.tone as number | undefined) ?? 0;
+                const toneColor =
+                  tone <= -4
+                    ? "#ff5c5c"
+                    : tone <= -1
+                      ? "#ffa45c"
+                      : tone >= 4
+                        ? "#7af07a"
+                        : tone >= 1
+                          ? "#a8d68f"
+                          : "#cdd3dc";
+                const count = (d.count as number) ?? 1;
+                const dotSize = Math.max(8, Math.min(28, 7 + Math.sqrt(count) * 3.5));
+                const glow = Math.max(4, dotSize * 0.5);
+                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${toneColor};opacity:0.92;box-shadow:0 0 ${glow}px ${toneColor},inset 0 0 2px rgba(0,0,0,0.4);border:1px solid rgba(0,0,0,0.4);cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto"></div>`;
               } else if (d.kind === "histTornado") {
                 const ef = d.ef as number;
                 const efColor =

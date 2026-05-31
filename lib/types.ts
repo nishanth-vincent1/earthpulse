@@ -333,6 +333,7 @@ export type NewsGroup = {
   lat: number;
   lng: number;
   count: number;
+  tone?: number;
   topArticles: NewsArticle[];
 };
 

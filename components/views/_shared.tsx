@@ -26,11 +26,12 @@ export function formatObs(d: string, obscured: boolean): string {
 
 export function formatGdeltDate(s: string): string {
   if (!s || s.length < 8) return s;
-  const yr = s.slice(0, 4);
-  const mo = s.slice(4, 6);
-  const dy = s.slice(6, 8);
-  const hr = s.slice(9, 11) || "";
-  const mn = s.slice(11, 13) || "";
+  const clean = s.replace(/[TZ]/g, "");
+  const yr = clean.slice(0, 4);
+  const mo = clean.slice(4, 6);
+  const dy = clean.slice(6, 8);
+  const hr = clean.slice(8, 10) || "";
+  const mn = clean.slice(10, 12) || "";
   return `${yr}-${mo}-${dy}${hr ? ` ${hr}:${mn}` : ""} UTC`;
 }
 
