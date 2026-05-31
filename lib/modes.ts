@@ -14,6 +14,12 @@ export type LayerKey =
   | "cables"
   | "cams"
   | "news"
+  | "newsCrisis"
+  | "newsConflict"
+  | "newsPolitics"
+  | "newsEconomy"
+  | "newsHealth"
+  | "newsTech"
   | "buoys"
   | "wildlife"
   | "airquality"
@@ -54,6 +60,12 @@ const noLayers: Record<LayerKey, boolean> = {
   cables: false,
   cams: false,
   news: false,
+  newsCrisis: false,
+  newsConflict: false,
+  newsPolitics: false,
+  newsEconomy: false,
+  newsHealth: false,
+  newsTech: false,
   buoys: false,
   wildlife: false,
   airquality: false,

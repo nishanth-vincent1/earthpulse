@@ -326,6 +326,10 @@ export type NewsArticle = {
   domain: string;
   language: string;
   sourcecountry: string;
+  themes?: string[];
+  entities?: string[];
+  category?: string;
+  tone?: number;
 };
 
 export type NewsGroup = {
@@ -334,6 +338,7 @@ export type NewsGroup = {
   lng: number;
   count: number;
   tone?: number;
+  primaryCategory?: string;
   topArticles: NewsArticle[];
 };
 

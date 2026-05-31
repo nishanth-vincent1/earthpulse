@@ -476,7 +476,15 @@ export default function LivingEarth() {
   }, [layers.cams]);
 
   useEffect(() => {
-    if (!layers.news) return;
+    const anyNewsLayer =
+      layers.news ||
+      layers.newsCrisis ||
+      layers.newsConflict ||
+      layers.newsPolitics ||
+      layers.newsEconomy ||
+      layers.newsHealth ||
+      layers.newsTech;
+    if (!anyNewsLayer) return;
     loadOnce("news", () => {
       return fetch("/api/news")
         .then((r) => r.json())
@@ -485,7 +493,15 @@ export default function LivingEarth() {
           setNewsRateLimited(!!d.rateLimited);
         });
     });
-  }, [layers.news]);
+  }, [
+    layers.news,
+    layers.newsCrisis,
+    layers.newsConflict,
+    layers.newsPolitics,
+    layers.newsEconomy,
+    layers.newsHealth,
+    layers.newsTech,
+  ]);
 
   useEffect(() => {
     if (!layers.buoys) return;
@@ -1315,9 +1331,36 @@ export default function LivingEarth() {
             _label: `${c.name} · ${c.category}`,
           })),
       );
-    if (layers.news)
+    {
+      const activeCategories = new Set<string>();
+      if (layers.newsCrisis) activeCategories.add("crisis");
+      if (layers.newsConflict) activeCategories.add("conflict");
+      if (layers.newsPolitics) activeCategories.add("politics");
+      if (layers.newsEconomy) activeCategories.add("economy");
+      if (layers.newsHealth) activeCategories.add("health");
+      if (layers.newsTech) activeCategories.add("tech");
+
+      let visibleGroups: NewsGroup[] = [];
+      if (layers.news) {
+        visibleGroups = newsGroups;
+      } else if (activeCategories.size > 0) {
+        for (const g of newsGroups) {
+          const filteredArticles = g.topArticles.filter((a) =>
+            activeCategories.has(a.category ?? "other"),
+          );
+          if (filteredArticles.length === 0) continue;
+          visibleGroups.push({
+            ...g,
+            count: filteredArticles.length,
+            topArticles: filteredArticles,
+            primaryCategory:
+              filteredArticles[0].category ?? g.primaryCategory,
+          });
+        }
+      }
+
       out.push(
-        ...newsGroups.map((g) => ({
+        ...visibleGroups.map((g) => ({
           ...g,
           kind: "news" as const,
           _icon: "📰",
@@ -1325,6 +1368,7 @@ export default function LivingEarth() {
           _scale: Math.min(1.6, 0.9 + g.count / 8),
         })),
       );
+    }
     if (layers.fires && fires.length <= 600) {
       const max = 400;
       const sample =
@@ -1476,6 +1520,12 @@ export default function LivingEarth() {
     layers.wildlife,
     layers.cams,
     layers.news,
+    layers.newsCrisis,
+    layers.newsConflict,
+    layers.newsPolitics,
+    layers.newsEconomy,
+    layers.newsHealth,
+    layers.newsTech,
     layers.aircraft,
     layers.fires,
     layers.ships,
@@ -2365,21 +2415,24 @@ export default function LivingEarth() {
                     : "";
                 el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:1.5px solid ${borderColor};box-shadow:0 0 6px rgba(0,0,0,0.7),0 0 0 2px rgba(0,0,0,0.6);background:#222 center/cover url('${src}');cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto">${badge}</div>`;
               } else if (d.kind === "news") {
-                const tone = (d.tone as number | undefined) ?? 0;
-                const toneColor =
-                  tone <= -4
-                    ? "#ff5c5c"
-                    : tone <= -1
-                      ? "#ffa45c"
-                      : tone >= 4
-                        ? "#7af07a"
-                        : tone >= 1
-                          ? "#a8d68f"
-                          : "#cdd3dc";
+                const category = (d.primaryCategory as string | undefined) ?? "other";
+                const CATEGORY_COLORS: Record<string, string> = {
+                  crisis: "#ff5050",
+                  conflict: "#ff7a30",
+                  protest: "#ffb14d",
+                  health: "#d68fff",
+                  politics: "#5fb7ff",
+                  economy: "#7af07a",
+                  tech: "#7be4ff",
+                  environment: "#a8d68f",
+                  sports: "#ffe16a",
+                  other: "#cdd3dc",
+                };
+                const color = CATEGORY_COLORS[category] ?? "#cdd3dc";
                 const count = (d.count as number) ?? 1;
                 const dotSize = Math.max(8, Math.min(28, 7 + Math.sqrt(count) * 3.5));
                 const glow = Math.max(4, dotSize * 0.5);
-                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${toneColor};opacity:0.92;box-shadow:0 0 ${glow}px ${toneColor},inset 0 0 2px rgba(0,0,0,0.4);border:1px solid rgba(0,0,0,0.4);cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto"></div>`;
+                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${color};opacity:0.92;box-shadow:0 0 ${glow}px ${color},inset 0 0 2px rgba(0,0,0,0.4);border:1px solid rgba(0,0,0,0.4);cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto"></div>`;
               } else if (d.kind === "histTornado") {
                 const ef = d.ef as number;
                 const efColor =
@@ -3064,6 +3117,18 @@ type LayerSection = { title: string; items: LayerItem[] };
 
 const LAYER_SECTIONS: LayerSection[] = [
   {
+    title: "News",
+    items: [
+      { key: "news", label: "All news", color: "#cdd3dc" },
+      { key: "newsCrisis", label: "🚨 Crisis", color: "#ff5050" },
+      { key: "newsConflict", label: "⚔️ Conflict", color: "#ff7a30" },
+      { key: "newsPolitics", label: "🏛️ Politics", color: "#5fb7ff" },
+      { key: "newsEconomy", label: "📈 Economy", color: "#7af07a" },
+      { key: "newsHealth", label: "🏥 Health", color: "#d68fff" },
+      { key: "newsTech", label: "💻 Tech", color: "#7be4ff" },
+    ],
+  },
+  {
     title: "Sky",
     items: [
       { key: "iss", label: "ISS + crew", color: "#a3e8ff" },
@@ -3111,7 +3176,6 @@ const LAYER_SECTIONS: LayerSection[] = [
     items: [
       { key: "aircraft", label: "Aircraft", color: "#ffe16a" },
       { key: "cams", label: "Live webcams", color: "#fda4af" },
-      { key: "news", label: "News pulse (GDELT)", color: "#ffb14d" },
       { key: "airquality", label: "Air quality (AQICN)", color: "#a872c6" },
       { key: "cables", label: "Submarine cables", color: "#7be4ff" },
     ],
