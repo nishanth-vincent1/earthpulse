@@ -16,9 +16,20 @@ export type Quake = {
   place: string;
   time: number;
   url: string;
+  detail?: string;
   lat: number;
   lng: number;
   depth: number;
+  felt?: number | null;
+  cdi?: number | null;
+  mmi?: number | null;
+  alert?: string | null;
+  status?: string | null;
+  tsunami?: boolean;
+  sig?: number | null;
+  magType?: string | null;
+  type?: string;
+  nst?: number | null;
 };
 
 export type EONETEvent = {
@@ -76,11 +87,17 @@ export type Disaster = {
   typeName: string;
   name: string;
   alert: string;
+  alertScore?: number | null;
   color: string;
   country: string;
+  affectedCountries?: string[];
   fromDate: string;
   toDate: string;
   description: string;
+  source?: string;
+  severityText?: string;
+  isCurrent?: boolean;
+  reportUrl?: string;
   lat: number;
   lng: number;
 };
