@@ -111,6 +111,14 @@ export type Fire = {
   date?: string;
   link?: string;
   id?: string;
+  confidence?: string;
+  acqDate?: string;
+  acqTime?: string;
+  satellite?: string;
+  daynight?: string;
+  type?: number;
+  bright5?: number;
+  source?: string;
 };
 
 export type TideStation = {

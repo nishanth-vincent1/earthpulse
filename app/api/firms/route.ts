@@ -105,10 +105,28 @@ export async function GET() {
     const idxLat = header.indexOf("latitude");
     const idxLng = header.indexOf("longitude");
     const idxBright = header.indexOf("bright_ti4");
+    const idxBright5 = header.indexOf("bright_ti5");
     const idxFrp = header.indexOf("frp");
     const idxConf = header.indexOf("confidence");
+    const idxAcqDate = header.indexOf("acq_date");
+    const idxAcqTime = header.indexOf("acq_time");
+    const idxSat = header.indexOf("satellite");
+    const idxDayNight = header.indexOf("daynight");
+    const idxType = header.indexOf("type");
 
-    const all: Array<{ lat: number; lng: number; bright: number; frp: number }> = [];
+    const all: Array<{
+      lat: number;
+      lng: number;
+      bright: number;
+      frp: number;
+      confidence?: string;
+      acqDate?: string;
+      acqTime?: string;
+      satellite?: string;
+      daynight?: string;
+      type?: number;
+      bright5?: number;
+    }> = [];
     for (let i = 1; i < lines.length; i++) {
       const c = lines[i].split(",");
       if (c[idxConf] === "l") continue;
@@ -117,7 +135,19 @@ export async function GET() {
       const bright = parseFloat(c[idxBright]);
       const frp = parseFloat(c[idxFrp]);
       if (Number.isNaN(lat) || Number.isNaN(lng)) continue;
-      all.push({ lat, lng, bright, frp });
+      all.push({
+        lat,
+        lng,
+        bright,
+        frp,
+        confidence: idxConf >= 0 ? c[idxConf] : undefined,
+        acqDate: idxAcqDate >= 0 ? c[idxAcqDate] : undefined,
+        acqTime: idxAcqTime >= 0 ? c[idxAcqTime] : undefined,
+        satellite: idxSat >= 0 ? c[idxSat] : undefined,
+        daynight: idxDayNight >= 0 ? c[idxDayNight] : undefined,
+        type: idxType >= 0 ? parseInt(c[idxType]) : undefined,
+        bright5: idxBright5 >= 0 ? parseFloat(c[idxBright5]) : undefined,
+      });
     }
 
     const max = 500;
