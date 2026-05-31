@@ -2799,7 +2799,9 @@ export default function LivingEarth() {
                   isMobile ? "px-5 pt-12 pb-6" : "px-6 pt-16 pb-8"
                 }
               >
-              <Narration narration={narration} loading={narrationLoading} />
+              {selection.kind !== "place" && (
+                <Narration narration={narration} loading={narrationLoading} />
+              )}
 
               {selection.kind === "event" && (
                 <EventView key={selection.event.id} event={selection.event} />
@@ -2961,6 +2963,8 @@ export default function LivingEarth() {
                   satellitesNeedKey={satellitesNeedKey}
                   playingId={playingId}
                   onPlay={playBird}
+                  narration={narration}
+                  narrationLoading={narrationLoading}
                 />
               )}
               </div>

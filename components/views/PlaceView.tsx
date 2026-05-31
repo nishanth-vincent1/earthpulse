@@ -25,6 +25,8 @@ export function PlaceView({
   satellitesNeedKey,
   playingId,
   onPlay,
+  narration,
+  narrationLoading,
 }: {
   lat: number;
   lng: number;
@@ -40,6 +42,8 @@ export function PlaceView({
   satellitesNeedKey: boolean;
   playingId: string | null;
   onPlay: (r: Recording) => void;
+  narration: string | null;
+  narrationLoading: boolean;
 }) {
   const heading = placeInfo?.place.city
     ? placeInfo.place.city
@@ -54,22 +58,71 @@ export function PlaceView({
         ? "Open ocean"
         : `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`;
 
+  // Pull a hero image from the first nearby Wikipedia article that has one.
+  const heroWiki = wiki.find((w) => !!w.thumb);
+  const restOfWiki = heroWiki ? wiki.filter((w) => w !== heroWiki) : wiki;
+
+  // Drop-cap the first letter of narration when present
+  const narrationFirstChar = narration?.[0] ?? "";
+  const narrationRest = narration?.slice(1) ?? "";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <div className="text-xs uppercase tracking-[0.25em] text-white/40">
-        {placeLoading ? "locating…" : "you clicked on"}
+      {/* HERO */}
+      {heroWiki?.thumb && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={heroWiki.thumb}
+          alt={heroWiki.title}
+          className="w-full h-40 object-cover rounded-lg border border-white/10 mb-5"
+        />
+      )}
+
+      <div className="text-[10px] uppercase tracking-[0.25em] text-amber-200/60">
+        {placeLoading ? "Locating…" : "Field journal"}
       </div>
-      <h2 className="text-3xl font-light text-white mt-1 flex items-center gap-3">
+      <h2 className="text-4xl font-light text-white mt-1 leading-tight flex items-center gap-3">
         {placeInfo?.country?.flag && (
-          <span className="text-2xl">{placeInfo.country.flag}</span>
+          <span className="text-3xl">{placeInfo.country.flag}</span>
         )}
-        {heading}
+        <span className="truncate">{heading}</span>
       </h2>
-      <div className="text-white/50 text-sm mt-1">{sub}</div>
+      <div className="text-white/55 text-sm mt-1">{sub}</div>
+
+      {/* NARRATION — pull quote, drop cap */}
+      {(narrationLoading || narration) && (
+        <motion.div
+          key={narration ?? "loading"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="relative mt-5 mb-2 pl-5 pr-1"
+        >
+          <div
+            className="absolute left-0 top-1 bottom-1 w-[2px] rounded"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(255,209,71,0.7), rgba(255,209,71,0.05))",
+            }}
+          />
+          {narrationLoading ? (
+            <div className="text-white/50 text-sm italic">
+              Composing a field note…
+            </div>
+          ) : (
+            <p className="text-amber-50/85 text-[15px] leading-relaxed font-light italic">
+              <span className="float-left text-4xl leading-[0.85] pr-1.5 pt-1 text-amber-200/85 not-italic font-serif">
+                {narrationFirstChar}
+              </span>
+              {narrationRest}
+            </p>
+          )}
+        </motion.div>
+      )}
 
       {placeInfo?.weather && (
         <div className="mt-6 border border-white/10 rounded-xl p-4 bg-white/[0.02]">
@@ -217,7 +270,7 @@ export function PlaceView({
         </div>
       )}
 
-      {(wikiLoading || wiki.length > 0) && (
+      {(wikiLoading || restOfWiki.length > 0 || heroWiki) && (
         <div className="mt-8 border-t border-white/10 pt-6">
           <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">
             Stories nearby
@@ -226,7 +279,28 @@ export function PlaceView({
             <div className="text-white/40 text-sm">searching Wikipedia…</div>
           )}
           <ul className="space-y-3">
-            {wiki.map((w) => (
+            {/* Show hero article first (already used image) — without re-showing the image */}
+            {heroWiki && (
+              <li key={heroWiki.title + "-hero"}>
+                <a
+                  href={heroWiki.url}
+                  target="_blank"
+                  rel="noopener"
+                  className="block group"
+                >
+                  <div className="text-sm text-white group-hover:underline">
+                    {heroWiki.title}
+                  </div>
+                  <div className="text-[11px] text-white/50 line-clamp-2 leading-relaxed mt-0.5">
+                    {heroWiki.extract}
+                  </div>
+                  <div className="text-[10px] text-white/30 mt-0.5">
+                    {Math.round(heroWiki.distM)}m away · pictured above
+                  </div>
+                </a>
+              </li>
+            )}
+            {restOfWiki.map((w) => (
               <li key={w.title}>
                 <a
                   href={w.url}
