@@ -1994,7 +1994,7 @@ export default function LivingEarth() {
     <div className="relative w-screen h-screen overflow-hidden bg-black">
       <div
         className={`absolute inset-0 ${
-          isMobile && (selection || layersDrawerOpen) ? "mobile-panel-open" : ""
+          isMobile && (selection || layersDrawerOpen) ? "panel-open" : ""
         }`}
       >
         {size.w > 0 && (
@@ -2766,7 +2766,7 @@ export default function LivingEarth() {
             className={
               isMobile
                 ? "fixed bottom-0 left-0 right-0 max-h-[80vh] rounded-t-2xl bg-black/95 backdrop-blur-xl border-t border-white/10 z-30 overflow-hidden flex flex-col"
-                : "absolute top-0 right-0 h-full w-full sm:w-[460px] bg-black/85 backdrop-blur-xl border-l border-white/10 z-30"
+                : "fixed top-0 right-0 h-full w-full sm:w-[460px] bg-black/95 backdrop-blur-xl border-l border-white/10 z-[60] isolate"
             }
           >
             {isMobile && (

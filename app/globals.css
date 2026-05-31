@@ -25,7 +25,7 @@ body {
   touch-action: manipulation;
 }
 
-.mobile-panel-open .g-icon {
+.panel-open .g-icon {
   display: none;
 }
 
