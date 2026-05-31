@@ -5,6 +5,7 @@ export { EventView } from "./EventView";
 export { LaunchView } from "./LaunchView";
 export { NewsView } from "./NewsView";
 export { BuoyView } from "./BuoyView";
+export { TideView } from "./TideView";
 export { CamView } from "./CamView";
 export { VolcanoView } from "./VolcanoView";
 export { ISSView } from "./ISSView";

@@ -129,6 +129,17 @@ export type TideStation = {
   lng: number;
 };
 
+export type TideData = {
+  stationId: string;
+  stationName: string | null;
+  current: { time: string; feet: number; quality: string | null } | null;
+  nextHigh: { time: string; feet: number } | null;
+  nextLow: { time: string; feet: number } | null;
+  todayHiLo: Array<{ time: string; feet: number; type: "H" | "L" }>;
+  waterTempF: number | null;
+  waterTempTime: string | null;
+};
+
 export type Satellite = {
   id: number;
   name: string;

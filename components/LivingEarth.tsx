@@ -38,6 +38,7 @@ import type {
   Disaster,
   Fire,
   TideStation,
+  TideData,
   Satellite,
   Species,
   AuroraPoint,
@@ -76,6 +77,7 @@ import {
   LaunchView,
   NewsView,
   BuoyView,
+  TideView,
   CamView,
   VolcanoView,
   ISSView,
@@ -150,6 +152,7 @@ type Selection =
   | { kind: "cam"; cam: Cam }
   | { kind: "news"; group: NewsGroup }
   | { kind: "buoy"; buoy: Buoy }
+  | { kind: "tide"; station: TideStation }
   | { kind: "wildlife"; wildlife: Wildlife }
   | { kind: "quake"; quake: Quake }
   | { kind: "fire"; fire: Fire }
@@ -209,6 +212,8 @@ export default function LivingEarth() {
   const [buoys, setBuoys] = useState<Buoy[]>([]);
   const [buoyReadings, setBuoyReadings] = useState<BuoyReadings | null>(null);
   const [buoyLoading, setBuoyLoading] = useState(false);
+  const [tideData, setTideData] = useState<TideData | null>(null);
+  const [tideLoading, setTideLoading] = useState(false);
   const [wildlife, setWildlife] = useState<Wildlife[]>([]);
   const [airStations, setAirStations] = useState<AirStation[]>([]);
   const [airNeedsKey, setAirNeedsKey] = useState(false);
@@ -738,6 +743,9 @@ export default function LivingEarth() {
     } else if (s.kind === "buoy") {
       lat = s.buoy.lat;
       lng = s.buoy.lng;
+    } else if (s.kind === "tide") {
+      lat = s.station.lat;
+      lng = s.station.lng;
     } else if (s.kind === "quake") {
       lat = s.quake.lat;
       lng = s.quake.lng;
@@ -970,6 +978,13 @@ export default function LivingEarth() {
       emoji = s.buoy.dart ? "⚠" : "🛟";
       lat = s.buoy.lat;
       lng = s.buoy.lng;
+    } else if (s.kind === "tide") {
+      id = s.station.id;
+      title = s.station.name;
+      subtitle = `NOAA tide gauge${s.station.state ? " · " + s.station.state : ""}`;
+      emoji = "🌊";
+      lat = s.station.lat;
+      lng = s.station.lng;
     } else if (s.kind === "quake") {
       id = s.quake.id;
       title = `M${s.quake.mag.toFixed(1)} · ${s.quake.place}`;
@@ -1941,6 +1956,21 @@ export default function LivingEarth() {
       .finally(() => setBuoyLoading(false));
   }
 
+  function selectTide(station: TideStation) {
+    setSelection({ kind: "tide", station });
+    setNarration(null);
+    setTideData(null);
+    setTideLoading(true);
+    if (globeEl.current) {
+      const _c = globeEl.current.controls?.();
+      if (_c) _c.autoRotate = false;
+    }
+    fetch(`/api/tide-station?id=${encodeURIComponent(station.id)}`)
+      .then((r) => r.json())
+      .then((d) => setTideData(d as TideData))
+      .finally(() => setTideLoading(false));
+  }
+
   async function narrate(payload: any) {
     setNarrationLoading(true);
     try {
@@ -2252,6 +2282,7 @@ export default function LivingEarth() {
               else if (d.kind === "cetacean") selectCetacean(d as Cetacean);
               else if (d.kind === "cam") selectCam(d as Cam);
               else if (d.kind === "buoy") selectBuoy(d as Buoy);
+              else if (d.kind === "tide") selectTide(d as TideStation);
               else if (d.kind === "quake") selectQuake(d as Quake);
               else if (d.kind === "fire") selectFire(d as Fire);
               else if (d.kind === "air") selectAir(d as AirStation);
@@ -2944,6 +2975,14 @@ export default function LivingEarth() {
                   buoy={selection.buoy}
                   readings={buoyReadings}
                   loading={buoyLoading}
+                />
+              )}
+
+              {selection.kind === "tide" && (
+                <TideView
+                  station={selection.station}
+                  data={tideData}
+                  loading={tideLoading}
                 />
               )}
 
