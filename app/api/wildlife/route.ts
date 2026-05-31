@@ -17,7 +17,7 @@ const TAXA: Array<{ id: number; category: string; emoji: string }> = [
 
 type Obs = {
   id: number;
-  taxon: { name: string; preferred_common_name?: string };
+  taxon: { id?: number; name: string; preferred_common_name?: string };
   place_guess?: string;
   observed_on?: string;
   geojson?: { coordinates: [number, number] };
@@ -26,6 +26,7 @@ type Obs = {
   obscured?: boolean;
   taxon_geoprivacy?: string | null;
   geoprivacy?: string | null;
+  user?: { login?: string; name?: string };
 };
 
 export async function GET() {
@@ -53,7 +54,10 @@ export async function GET() {
       lat: number;
       lng: number;
       photo: string | null;
+      photos: string[];
       uri: string;
+      observer: string;
+      taxonId: number | null;
     }> = [];
 
     responses.forEach((data, i) => {
@@ -81,7 +85,15 @@ export async function GET() {
           photo: o.photos?.[0]?.url
             ? o.photos[0].url.replace(/\/square\.(jpe?g|png)/i, "/medium.$1")
             : null,
+          photos: (o.photos ?? [])
+            .slice(0, 4)
+            .map((p) =>
+              (p.url ?? "").replace(/\/square\.(jpe?g|png)/i, "/medium.$1"),
+            )
+            .filter(Boolean),
           uri: o.uri,
+          observer: o.user?.name || o.user?.login || "",
+          taxonId: o.taxon.id ?? null,
         });
       }
     });

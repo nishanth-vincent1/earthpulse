@@ -173,7 +173,10 @@ export type Plant = {
   lat: number;
   lng: number;
   photo: string | null;
+  photos?: string[];
   uri: string;
+  observer?: string;
+  taxonId?: number | null;
 };
 
 export type Wildlife = {
@@ -188,7 +191,10 @@ export type Wildlife = {
   lat: number;
   lng: number;
   photo: string | null;
+  photos?: string[];
   uri: string;
+  observer?: string;
+  taxonId?: number | null;
 };
 
 export type AirStation = {
@@ -246,6 +252,8 @@ export type RareBird = {
   lng: number;
   validated: boolean;
   reviewed: boolean;
+  speciesCode?: string;
+  locId?: string;
 };
 
 export type Ship = {

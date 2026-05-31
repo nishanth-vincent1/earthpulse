@@ -183,6 +183,8 @@ export async function GET() {
         lng: o.lng,
         validated: o.obsValid,
         reviewed: o.obsReviewed,
+        speciesCode: o.speciesCode,
+        locId: o.locId,
       }));
 
     const uniqueSci = Array.from(new Set(sightings.map((s) => s.scientific)));
