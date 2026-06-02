@@ -80,7 +80,7 @@ export async function GET() {
   }
 
   try {
-    const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/world/1`;
+    const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_NOAA20_NRT/world/2`;
     const r = await fetch(url, { cache: "no-store" });
     if (!r.ok) {
       const fires = await loadEonetWildfires();

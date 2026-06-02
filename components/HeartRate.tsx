@@ -21,6 +21,12 @@ export type PulseData = {
   };
 };
 
+function fmt(n: number): string {
+  if (n >= 10_000) return `${(n / 1000).toFixed(0)}K`;
+  if (n >= 1_000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
+
 export function HeartRate({ pulse }: { pulse: PulseData | null }) {
   if (!pulse) {
     return (
@@ -83,7 +89,7 @@ export function HeartRate({ pulse }: { pulse: PulseData | null }) {
       <div className="text-[9px] text-white/40 mt-1 leading-snug">
         {sig.quakeCount > 0 && (
           <>
-            🪨 {sig.quakeCount} quakes
+            🪨 {fmt(sig.quakeCount)} M5+ quakes
             {sig.quakeSum > 0 && (
               <span className="text-white/30">
                 {" "}
@@ -106,14 +112,20 @@ export function HeartRate({ pulse }: { pulse: PulseData | null }) {
             disasters ·{" "}
           </>
         )}
-        {sig.hurricaneCount > 0 && <>🌀 {sig.hurricaneCount} active · </>}
-        {sig.wildfires > 0 && <>🔥 {sig.wildfires} fires · </>}
-        {sig.volcanoes > 0 && <>🌋 {sig.volcanoes} · </>}
+        {sig.hurricaneCount > 0 && (
+          <>🌀 {sig.hurricaneCount} cat 3+ hurricane{sig.hurricaneCount === 1 ? "" : "s"} · </>
+        )}
+        {sig.wildfires > 0 && <>🔥 {fmt(sig.wildfires)} major fires · </>}
+        {sig.volcanoes > 0 && <>🌋 {sig.volcanoes} volcanoes · </>}
         {sig.waqiTotal > 0 && (
           <>
-            💨 {sig.waqiUnhealthy}/{sig.waqiTotal} unhealthy AQ
+            💨 {fmt(sig.waqiUnhealthy)}/{fmt(sig.waqiTotal)} unhealthy AQ
           </>
         )}
+      </div>
+      <div className="text-[9px] text-white/25 mt-1.5 leading-relaxed max-w-[280px]">
+        Significant events only · M5+ quakes, red/orange disasters,
+        cat 3+ hurricanes, ≥100MW wildfires
       </div>
     </div>
   );

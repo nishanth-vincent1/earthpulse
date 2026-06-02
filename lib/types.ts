@@ -30,6 +30,8 @@ export type Quake = {
   magType?: string | null;
   type?: string;
   nst?: number | null;
+  source?: "usgs" | "emsc";
+  agency?: string | null;
 };
 
 export type EONETEvent = {
@@ -243,6 +245,7 @@ export type AirStation = {
   time: string | null;
   severity: string;
   color: string;
+  source?: "aqicn" | "openaq";
 };
 
 export type Avalanche = {

@@ -219,6 +219,11 @@ export function QuakeView({ quake }: { quake: Quake }) {
             ✓ Reviewed by USGS seismologist
           </span>
         )}
+        {quake.source === "emsc" && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-300/30 bg-blue-300/[0.06] text-[10px] tracking-widest uppercase text-blue-200/80">
+            🇪🇺 EMSC {quake.agency && quake.agency !== "EMSC" ? `· ${quake.agency}` : ""}
+          </span>
+        )}
         {eventTypeLabel && (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-purple-300/30 bg-purple-300/[0.06] text-[10px] tracking-widest uppercase text-purple-200/80">
             ⚠ {eventTypeLabel}
@@ -321,10 +326,12 @@ export function QuakeView({ quake }: { quake: Quake }) {
             rel="noopener"
             className="text-sm text-white/70 hover:text-white underline-offset-4 hover:underline"
           >
-            USGS event page →
+            {quake.source === "emsc"
+              ? "EMSC event page →"
+              : "USGS event page →"}
           </a>
         )}
-        {quake.url && (
+        {quake.source !== "emsc" && quake.url && (
           <a
             href={`${quake.url}/dyfi`}
             target="_blank"
@@ -334,13 +341,24 @@ export function QuakeView({ quake }: { quake: Quake }) {
             Did you feel it? Report on USGS →
           </a>
         )}
+        {quake.source === "emsc" && (
+          <a
+            href="https://www.seismicportal.eu/testimonies-ui.html"
+            target="_blank"
+            rel="noopener"
+            className="text-sm text-white/60 hover:text-white underline-offset-4 hover:underline"
+          >
+            Did you feel it? Report via EMSC LastQuake →
+          </a>
+        )}
       </div>
 
       <div className="mt-3 text-[10px] text-white/30 leading-relaxed">
-        Source · USGS Earthquake Hazards Program · M2.5+ events from past
-        24h. Felt reports + Community Decimal Intensity (CDI) are
-        crowd-sourced; MMI is computed from instrument data. Region context
-        from Wikipedia.
+        Source ·{" "}
+        {quake.source === "emsc"
+          ? "EMSC (European-Mediterranean Seismological Centre). EMSC aggregates reports from regional networks across Europe, North Africa, and the Middle East — often the fastest source for EU events."
+          : "USGS Earthquake Hazards Program · M2.5+ events from past 24h. Felt reports + Community Decimal Intensity (CDI) are crowd-sourced; MMI is computed from instrument data."}{" "}
+        Region context from Wikipedia.
       </div>
     </motion.div>
   );
