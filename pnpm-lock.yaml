@@ -14,6 +14,9 @@ importers:
       framer-motion:
         specifier: ^12.38.0
         version: 12.38.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      jsfive:
+        specifier: ^0.4.0
+        version: 0.4.0
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -1047,6 +1050,9 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
+  jsfive@0.4.0:
+    resolution: {integrity: sha512-3I3feGAFleVsChR4o4g9McAOa3bLlJ8af3oimjHt4nJNnmnbGROqRghb7m4VXNSZO8UbImN3UPc0uY2EZGIw6Q==}
+
   jszip@3.10.1:
     resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
 
@@ -1192,6 +1198,9 @@ packages:
 
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
+
+  pako@2.1.0:
+    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -2224,6 +2233,10 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
+  jsfive@0.4.0:
+    dependencies:
+      pako: 2.1.0
+
   jszip@3.10.1:
     dependencies:
       lie: 3.3.0
@@ -2341,6 +2354,8 @@ snapshots:
   object-assign@4.1.1: {}
 
   pako@1.0.11: {}
+
+  pako@2.1.0: {}
 
   pathe@2.0.3: {}
 

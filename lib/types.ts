@@ -248,6 +248,15 @@ export type AirStation = {
   source?: "aqicn" | "openaq";
 };
 
+export type LightningStrike = {
+  id: string;
+  lat: number;
+  lng: number;
+  energy: number;
+  sat: string;
+  time: string;
+};
+
 export type Avalanche = {
   id: string;
   name: string;

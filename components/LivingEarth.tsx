@@ -37,6 +37,7 @@ import type {
   Storm,
   Disaster,
   Fire,
+  LightningStrike,
   TideStation,
   TideData,
   Satellite,
@@ -90,6 +91,7 @@ import {
   HistoricalStormView,
   AirView,
   FireView,
+  LightningView,
   QuakeView,
   WildlifeView,
   CetaceanView,
@@ -120,6 +122,37 @@ const EVENT_EMOJI: Record<string, string> = {
   "Temperature Extremes": "🌡",
   "Water Color": "💧",
 };
+
+const NEWS_EMOJI: Record<string, string> = {
+  crisis: "🚨",
+  conflict: "⚔️",
+  protest: "✊",
+  health: "🏥",
+  politics: "🏛️",
+  economy: "📈",
+  tech: "💻",
+  environment: "🌿",
+  sports: "🏅",
+  other: "📰",
+};
+
+// Lightning bolt color by flash energy: weak strikes glow warm amber, the
+// most powerful ones run white- to blue-hot (like a real lightning core).
+const BOLT_TIERS: Array<{
+  min: number;
+  core: string;
+  edge: string;
+  glow: string;
+}> = [
+  { min: 500, core: "#eaf3ff", edge: "#bcd8ff", glow: "190,216,255" },
+  { min: 250, core: "#fffdf2", edge: "#ffe88a", glow: "255,230,120" },
+  { min: 80, core: "#fffbe0", edge: "#ffd84d", glow: "255,200,70" },
+  { min: 20, core: "#fff0c0", edge: "#ffb43d", glow: "255,160,50" },
+  { min: 0, core: "#ffe0a8", edge: "#ff8f2e", glow: "255,130,40" },
+];
+function boltStyle(energy: number) {
+  return BOLT_TIERS.find((t) => energy >= t.min) ?? BOLT_TIERS[4];
+}
 
 const DISASTER_EMOJI: Record<string, string> = {
   EQ: "🪨",
@@ -156,6 +189,7 @@ type Selection =
   | { kind: "wildlife"; wildlife: Wildlife }
   | { kind: "quake"; quake: Quake }
   | { kind: "fire"; fire: Fire }
+  | { kind: "lightning"; strike: LightningStrike }
   | { kind: "air"; station: AirStation }
   | { kind: "histStorm"; storm: HistoricalStorm }
   | { kind: "ship"; ship: Ship }
@@ -189,6 +223,8 @@ export default function LivingEarth() {
   const [fires, setFires] = useState<Fire[]>([]);
   const [firesTotal, setFiresTotal] = useState(0);
   const [firesNeedKey, setFiresNeedKey] = useState(false);
+  const [lightning, setLightning] = useState<LightningStrike[]>([]);
+  const [lightningTotal, setLightningTotal] = useState(0);
   const [tides, setTides] = useState<TideStation[]>([]);
   const [aurora, setAurora] = useState<AuroraPoint[]>([]);
   const [kp, setKp] = useState<number | null>(null);
@@ -253,6 +289,12 @@ export default function LivingEarth() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const iconClickedAt = useRef<number>(0);
+  // Rolling buffer of recent lightning flashes keyed stably, so strikes that
+  // persist across polls keep their element (no re-flash) and old ones drop
+  // out on their own age timeline rather than all at the refresh instant.
+  const lightningBufferRef = useRef<
+    Map<string, LightningStrike & { kind: "lightning"; _label: string }>
+  >(new Map());
   const [pulse, setPulse] = useState<PulseData | null>(null);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [mode, setMode] = useState<Mode>(MODES[0]);
@@ -431,6 +473,66 @@ export default function LivingEarth() {
         });
     });
   }, [layers.fires]);
+
+  useEffect(() => {
+    if (!layers.lightning) return;
+    let cancelled = false;
+    // GLM publishes with ~45-75s of processing latency, so a "fresh" flash is
+    // already ~1 min old on arrival. The age window must clear that latency
+    // plus a viewing trail — otherwise strikes are stale the instant they land
+    // and the buffer empties (plain globe). ~150s keeps each flash visible for
+    // roughly 75-100s after we first see it.
+    const MAX_AGE = 150000;
+    const CAP = 700;
+    const apply = (d: { strikes?: LightningStrike[]; total?: number }) => {
+      if (cancelled) return;
+      const buf = lightningBufferRef.current;
+      const now = Date.now();
+      for (const s of d.strikes ?? []) {
+        const key = `${s.time}|${s.lat.toFixed(3)}|${s.lng.toFixed(3)}`;
+        // Reuse the existing object reference if we've seen this flash, so the
+        // globe doesn't recreate (and re-animate) its element. Render fields
+        // are baked in here so htmlData can pass the object through unchanged.
+        if (!buf.has(key))
+          buf.set(key, {
+            ...s,
+            id: key,
+            kind: "lightning",
+            _label: `Lightning flash · ${s.sat} GLM`,
+          });
+      }
+      for (const [k, s] of buf) {
+        if (now - new Date(s.time).getTime() > MAX_AGE) buf.delete(k);
+      }
+      if (buf.size > CAP) {
+        const oldest = [...buf.entries()].sort(
+          (a, b) =>
+            new Date(a[1].time).getTime() - new Date(b[1].time).getTime(),
+        );
+        for (let i = 0; i < buf.size - CAP; i++) buf.delete(oldest[i][0]);
+      }
+      setLightning([...buf.values()]);
+      setLightningTotal(d.total ?? 0);
+    };
+    // First load shows the layer spinner; then poll so new strikes flash in
+    // and stale ones decay — GLM publishes a fresh window every 20s.
+    loadOnce("lightning", () =>
+      fetch("/api/lightning")
+        .then((r) => r.json())
+        .then(apply),
+    );
+    const iv = setInterval(() => {
+      fetch("/api/lightning")
+        .then((r) => r.json())
+        .then(apply)
+        .catch(() => {});
+    }, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+      lightningBufferRef.current.clear();
+    };
+  }, [layers.lightning]);
 
   useEffect(() => {
     if (!layers.tides) return;
@@ -752,6 +854,9 @@ export default function LivingEarth() {
     } else if (s.kind === "fire") {
       lat = s.fire.lat;
       lng = s.fire.lng;
+    } else if (s.kind === "lightning") {
+      lat = s.strike.lat;
+      lng = s.strike.lng;
     } else if (s.kind === "air") {
       lat = s.station.lat;
       lng = s.station.lng;
@@ -999,6 +1104,13 @@ export default function LivingEarth() {
       emoji = "🔥";
       lat = s.fire.lat;
       lng = s.fire.lng;
+    } else if (s.kind === "lightning") {
+      id = `lightning-${s.strike.lat.toFixed(2)}-${s.strike.lng.toFixed(2)}`;
+      title = "Lightning flash";
+      subtitle = `${s.strike.sat} GLM`;
+      emoji = "⚡";
+      lat = s.strike.lat;
+      lng = s.strike.lng;
     } else if (s.kind === "air") {
       id = s.station.id;
       title = s.station.name;
@@ -1378,7 +1490,7 @@ export default function LivingEarth() {
         ...visibleGroups.map((g) => ({
           ...g,
           kind: "news" as const,
-          _icon: "📰",
+          _icon: NEWS_EMOJI[g.primaryCategory ?? "other"] ?? "📰",
           _label: `${g.country} · ${g.count} headlines`,
           _scale: Math.min(1.6, 0.9 + g.count / 8),
         })),
@@ -1401,6 +1513,13 @@ export default function LivingEarth() {
             : `Active wildfire · ${f.bright ? Math.round(f.bright) + "K" : ""}`,
         })),
       );
+    }
+    if (layers.lightning) {
+      // The rolling buffer is already bounded + deduped, and each strike keeps
+      // a stable object reference (render fields baked in at insert), so we
+      // push the objects straight through. Spreading into new objects here
+      // would churn element identity and re-flash the whole set every poll.
+      out.push(...(lightning as unknown as Record<string, unknown>[]));
     }
     if (layers.aircraft)
       out.push(
@@ -1513,6 +1632,7 @@ export default function LivingEarth() {
     newsGroups,
     aircraft,
     fires,
+    lightning,
     ships,
     rareBirds,
     avalanches,
@@ -1543,6 +1663,7 @@ export default function LivingEarth() {
     layers.newsTech,
     layers.aircraft,
     layers.fires,
+    layers.lightning,
     layers.ships,
     layers.rareBirds,
     layers.avalanches,
@@ -1807,6 +1928,15 @@ export default function LivingEarth() {
     }
   }
 
+  function selectLightning(strike: LightningStrike) {
+    setSelection({ kind: "lightning", strike });
+    setNarration(null);
+    if (globeEl.current) {
+      const _c = globeEl.current.controls?.();
+      if (_c) _c.autoRotate = false;
+    }
+  }
+
   function selectAir(station: AirStation) {
     setSelection({ kind: "air", station });
     setNarration(null);
@@ -2034,7 +2164,11 @@ export default function LivingEarth() {
             height={size.h}
             onGlobeReady={() => setGlobeReady(true)}
             backgroundColor="rgba(0,0,0,0)"
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+            globeImageUrl={
+              layers.trueColor
+                ? "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=BlueMarble_NextGeneration&CRS=EPSG:4326&FORMAT=image/jpeg&BBOX=-90,-180,90,180&WIDTH=4096&HEIGHT=2048&TIME=2004-06-01"
+                : "//unpkg.com/three-globe/example/img/earth-night.jpg"
+            }
             bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
             atmosphereColor={mode.atmosphereColor}
             atmosphereAltitude={0.22}
@@ -2409,6 +2543,53 @@ export default function LivingEarth() {
                 }
                 return el;
               }
+              if (d.kind === "lightning") {
+                const title = (d._label ?? "Lightning flash").replace(
+                  /"/g,
+                  "&quot;",
+                );
+                // Size + color by flash energy (log-scaled — energy spans
+                // orders of magnitude): faint flashes small & amber, very
+                // bright ones larger & white/blue-hot.
+                const energy = (d.energy as number) ?? 0;
+                const s = Math.max(
+                  0.7,
+                  Math.min(1.75, 0.7 + Math.log10(energy + 1) * 0.34),
+                );
+                const w = (13 * s).toFixed(1);
+                const h = (18 * s).toFixed(1);
+                const c = boltStyle(energy);
+                // Deterministic per-strike phase from coords so the flash-in
+                // and twinkle stagger instead of pulsing in lockstep. Spread
+                // entrance over ~3s so a refresh sprinkles strikes in rather
+                // than blinking the whole set at once.
+                const r = Math.abs(
+                  ((d.lat ?? 0) * 12.9898 + (d.lng ?? 0) * 78.233) % 1,
+                );
+                const enter = (r * 3).toFixed(2);
+                const twDelay = (Number(enter) + 0.6).toFixed(2);
+                const twDur = (2.2 + r * 1.6).toFixed(2);
+                // Vector bolt via clip-path — stays crisp at any zoom, unlike
+                // the emoji which the generic drop-shadow renders soft.
+                el.innerHTML = `<div class="g-icon" title="${title}" style="position:absolute;left:0;top:0;width:${w}px;height:${h}px;transform:translate(-50%,-50%);background:linear-gradient(180deg,${c.core} 0%,${c.edge} 60%,${c.edge} 100%);clip-path:polygon(46% 0%,72% 0%,52% 38%,80% 38%,28% 100%,46% 54%,20% 54%);filter:drop-shadow(0 0 3px rgba(${c.glow},0.95)) drop-shadow(0 0 7px rgba(${c.glow},0.55));cursor:pointer;pointer-events:auto;animation:lightning-strike 0.6s ease-out ${enter}s backwards,lightning-twinkle ${twDur}s ease-in-out ${twDelay}s infinite"></div>`;
+                const inner = el.firstElementChild as HTMLDivElement;
+                if (inner) {
+                  inner.addEventListener("mouseenter", () => {
+                    inner.style.transform = "translate(-50%,-50%) scale(1.7)";
+                    inner.style.filter = `drop-shadow(0 0 5px rgba(${c.glow},1)) drop-shadow(0 0 12px rgba(${c.glow},0.7))`;
+                  });
+                  inner.addEventListener("mouseleave", () => {
+                    inner.style.transform = "translate(-50%,-50%) scale(1)";
+                    inner.style.filter = `drop-shadow(0 0 3px rgba(${c.glow},0.95)) drop-shadow(0 0 7px rgba(${c.glow},0.55))`;
+                  });
+                  inner.addEventListener("pointerup", (ev) => {
+                    ev.stopPropagation();
+                    iconClickedAt.current = Date.now();
+                    selectLightning(d as LightningStrike);
+                  });
+                }
+                return el;
+              }
               const emoji = d._icon ?? "•";
               const label = (d._label ?? "").replace(/"/g, "&quot;");
               const baseSize =
@@ -2445,25 +2626,6 @@ export default function LivingEarth() {
                     ? `<span style="position:absolute;bottom:-4px;right:-4px;font-size:11px;line-height:1;background:rgba(0,0,0,0.85);border:1px solid rgba(244,114,182,0.7);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center">${d._icon}</span>`
                     : "";
                 el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:1.5px solid ${borderColor};box-shadow:0 0 6px rgba(0,0,0,0.7),0 0 0 2px rgba(0,0,0,0.6);background:#222 center/cover url('${src}');cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto">${badge}</div>`;
-              } else if (d.kind === "news") {
-                const category = (d.primaryCategory as string | undefined) ?? "other";
-                const CATEGORY_COLORS: Record<string, string> = {
-                  crisis: "#ff5050",
-                  conflict: "#ff7a30",
-                  protest: "#ffb14d",
-                  health: "#d68fff",
-                  politics: "#5fb7ff",
-                  economy: "#7af07a",
-                  tech: "#7be4ff",
-                  environment: "#a8d68f",
-                  sports: "#ffe16a",
-                  other: "#cdd3dc",
-                };
-                const color = CATEGORY_COLORS[category] ?? "#cdd3dc";
-                const count = (d.count as number) ?? 1;
-                const dotSize = Math.max(8, Math.min(28, 7 + Math.sqrt(count) * 3.5));
-                const glow = Math.max(4, dotSize * 0.5);
-                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${color};opacity:0.92;box-shadow:0 0 ${glow}px ${color},inset 0 0 2px rgba(0,0,0,0.4);border:1px solid rgba(0,0,0,0.4);cursor:pointer;transition:transform 180ms ease;will-change:transform;pointer-events:auto"></div>`;
               } else if (d.kind === "histTornado") {
                 const ef = d.ef as number;
                 const efColor =
@@ -2519,6 +2681,8 @@ export default function LivingEarth() {
                     else if (d.kind === "cam") selectCam(d as Cam);
                     else if (d.kind === "news") selectNews(d as NewsGroup);
                     else if (d.kind === "fire") selectFire(d as Fire);
+                    else if (d.kind === "lightning")
+                      selectLightning(d as LightningStrike);
                     else if (d.kind === "ship") selectShip(d as Ship);
                     else if (d.kind === "rareBird") selectRareBird(d as RareBird);
                     else if (d.kind === "avalanche") selectAvalanche(d as Avalanche);
@@ -2705,13 +2869,22 @@ export default function LivingEarth() {
         Open-Meteo · REST Countries · Wikipedia · Claude · NASA APOD · Launch
         Library 2 · NOAA NHC · GDACS · NASA FIRMS · NOAA Tides · N2YO · GBIF ·
         OBIS · NOAA SWPC · RainViewer · TeleGeography · USGS archive · eBird ·
-        AISStream · IUCN
+        AISStream · IUCN · NOAA GOES GLM
         {firesTotal > 0 && (
           <>
             <br />
             <span className="text-orange-300/40 normal-case tracking-normal">
               {firesTotal.toLocaleString()} active fire pixels detected by VIIRS
               in last 24h
+            </span>
+          </>
+        )}
+        {lightningTotal > 0 && (
+          <>
+            <br />
+            <span className="text-sky-200/40 normal-case tracking-normal">
+              {lightningTotal.toLocaleString()} lightning flashes (GOES GLM,
+              Americas & Pacific) in last ~40s
             </span>
           </>
         )}
@@ -2872,6 +3045,13 @@ export default function LivingEarth() {
                 <FireView
                   key={`${selection.fire.lat}-${selection.fire.lng}-${selection.fire.id ?? ""}`}
                   fire={selection.fire}
+                />
+              )}
+
+              {selection.kind === "lightning" && (
+                <LightningView
+                  key={`${selection.strike.lat}-${selection.strike.lng}-${selection.strike.time}`}
+                  strike={selection.strike}
                 />
               )}
 
@@ -3174,6 +3354,7 @@ const LAYER_SECTIONS: LayerSection[] = [
   {
     title: "Sky",
     items: [
+      { key: "trueColor", label: "🌎 True-color Earth (NASA)", color: "#7be4ff" },
       { key: "iss", label: "ISS + crew", color: "#a3e8ff" },
       { key: "moon", label: "Moon", color: "#e0c3fc" },
       { key: "stars", label: "Bright stars", color: "#cdb4ff" },
@@ -3191,6 +3372,7 @@ const LAYER_SECTIONS: LayerSection[] = [
       { key: "hurricanes", label: "Hurricanes", color: "#9bc7ff" },
       { key: "tornadoes", label: "Tornadoes (US, NWS)", color: "#ff3030" },
       { key: "fires", label: "Wildfires (FIRMS)", color: "#ff5520" },
+      { key: "lightning", label: "Lightning (GOES GLM)", color: "#bfe6ff" },
       { key: "avalanches", label: "Avalanches (US)", color: "#ffe16a" },
       { key: "disasters", label: "Disasters (GDACS)", color: "#ff9b3d" },
       { key: "events", label: "Natural events", color: "#ff6a3d" },

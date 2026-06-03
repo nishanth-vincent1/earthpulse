@@ -8,6 +8,7 @@ export type LayerKey =
   | "hurricanes"
   | "disasters"
   | "fires"
+  | "lightning"
   | "tides"
   | "aurora"
   | "cetaceans"
@@ -32,7 +33,8 @@ export type LayerKey =
   | "tornadoes"
   | "plants"
   | "stars"
-  | "moon";
+  | "moon"
+  | "trueColor";
 
 export type Mode = {
   id: string;
@@ -54,6 +56,7 @@ const noLayers: Record<LayerKey, boolean> = {
   hurricanes: false,
   disasters: false,
   fires: false,
+  lightning: false,
   tides: false,
   aurora: false,
   cetaceans: false,
@@ -79,6 +82,7 @@ const noLayers: Record<LayerKey, boolean> = {
   plants: false,
   stars: false,
   moon: false,
+  trueColor: false,
 };
 
 export const MODES: Mode[] = [
@@ -122,6 +126,7 @@ export const MODES: Mode[] = [
       events: true,
       disasters: true,
       fires: true,
+      lightning: true,
       hurricanes: true,
       news: true,
       volcanoes: true,
