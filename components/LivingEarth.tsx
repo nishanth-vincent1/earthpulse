@@ -1212,11 +1212,15 @@ export default function LivingEarth() {
       const sourceQuakes =
         mode.id === "timetravel" ? historicalQuakes : visibleQuakes;
       out.push(
-        ...sourceQuakes.map((q) => ({
-          ...q,
-          kind: "quake" as const,
-          color: q.mag >= 6 ? "#ff3030" : q.mag >= 4 ? "#ff7a30" : "#ffba30",
-        })),
+        // Ascending by magnitude so larger quakes are appended last and draw
+        // on top of the smaller-aftershock swarm that surrounds a mainshock.
+        ...[...sourceQuakes]
+          .sort((a, b) => a.mag - b.mag)
+          .map((q) => ({
+            ...q,
+            kind: "quake" as const,
+            color: q.mag >= 6 ? "#ff3030" : q.mag >= 4 ? "#ff7a30" : "#ffba30",
+          })),
       );
     }
     if (layers.fires && fires.length > 600)
@@ -2267,7 +2271,10 @@ export default function LivingEarth() {
                                   : d.kind === "buoy"
                                     ? 0.008
                                     : d.kind === "quake"
-                                      ? 0.003
+                                      ? Math.min(
+                                          0.02,
+                                          0.003 + Math.max(0, d.mag - 4) * 0.006,
+                                        )
                                       : d.kind === "air"
                                         ? 0.005
                                         : d.kind === "ship"
@@ -3437,11 +3444,11 @@ function LayerToggle({
       className={
         inline
           ? "text-xs"
-          : "absolute bottom-6 right-6 z-10 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 text-xs max-h-[80vh] overflow-y-auto scrollbar-thin"
+          : "absolute bottom-6 right-6 z-10 w-60 bg-zinc-950/85 backdrop-blur-xl border border-white/15 ring-1 ring-black/40 shadow-2xl shadow-black/70 rounded-xl p-3 text-xs max-h-[80vh] overflow-y-auto scrollbar-thin"
       }
     >
       {!inline && (
-        <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 px-1 flex justify-between items-center">
+        <div className="text-[10px] uppercase tracking-[0.2em] text-white/70 mb-2 pb-2 px-1 flex justify-between items-center border-b border-white/10">
           <span>Layers</span>
           <span style={{ color: mode.accent }}>{mode.label}</span>
         </div>
@@ -3449,7 +3456,7 @@ function LayerToggle({
       <div className="flex flex-col gap-3">
         {visibleSections.map((section) => (
           <div key={section.title}>
-            <div className="text-[9px] uppercase tracking-[0.25em] text-white/30 px-2 mb-1">
+            <div className="text-[9px] uppercase tracking-[0.25em] text-white/50 px-2 mb-1">
               {section.title}
             </div>
             <div className="flex flex-col gap-1">
@@ -3461,19 +3468,23 @@ function LayerToggle({
                   <div key={it.key} className="flex flex-col">
                     <button
                       onClick={() => toggle(it.key)}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors ${
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer ${
                         layers[it.key]
-                          ? "bg-white/5 text-white cursor-pointer"
-                          : "text-white/30 hover:text-white/60 cursor-pointer"
+                          ? "bg-white/10 text-white"
+                          : "text-white/55 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       <span
-                        className="w-2 h-2 rounded-full shrink-0"
+                        className="w-2.5 h-2.5 rounded-full shrink-0 transition-shadow"
                         style={{
                           background: layers[it.key]
                             ? it.color
                             : "transparent",
-                          border: `1px solid ${it.color}`,
+                          border: `1.5px solid ${it.color}`,
+                          boxShadow: layers[it.key]
+                            ? `0 0 6px ${it.color}`
+                            : "none",
+                          opacity: layers[it.key] ? 1 : 0.7,
                         }}
                       />
                       <span className="flex-1 text-left">{it.label}</span>

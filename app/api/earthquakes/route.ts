@@ -164,9 +164,11 @@ function dedupe(a: Quake[], b: Quake[]): Quake[] {
       const dLat = Math.abs(u.lat - q.lat);
       const dLng = Math.abs(u.lng - q.lng);
       if (dLat > 1.5 || dLng > 1.5) return false;
-      const km =
-        Math.sqrt(dLat * dLat + dLng * dLng) * 111 *
-        Math.cos((u.lat * Math.PI) / 180);
+      // Convert to km: latitude is ~111km/deg everywhere; longitude shrinks by
+      // cos(lat). The cos factor applies only to the longitude component.
+      const dLatKm = dLat * 111;
+      const dLngKm = dLng * 111 * Math.cos((u.lat * Math.PI) / 180);
+      const km = Math.sqrt(dLatKm * dLatKm + dLngKm * dLngKm);
       if (km > 80) return false;
       if (Math.abs(u.mag - q.mag) > 0.5) return false;
       return true;
