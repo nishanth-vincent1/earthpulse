@@ -31,3 +31,5 @@ export { PlantView } from "./PlantView";
 export { StarView } from "./StarView";
 export { MoonView } from "./MoonView";
 export { LightningView } from "./LightningView";
+
+export { AircraftView } from "./AircraftView";

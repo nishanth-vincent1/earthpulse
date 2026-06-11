@@ -12,6 +12,8 @@ type Ac = {
   onGround: boolean;
   velocity: number | null;
   heading: number | null;
+  reg: string | null;
+  acType: string | null;
 };
 
 let cache: { data: unknown; ts: number } | null = null;
@@ -58,6 +60,8 @@ function mapAdsb(ac: Record<string, unknown>): Ac {
     onGround,
     velocity: gs != null ? gs * 0.514444 : null, // knots → m/s
     heading: typeof ac.track === "number" ? (ac.track as number) : null,
+    reg: typeof ac.r === "string" ? (ac.r as string).trim() : null,
+    acType: typeof ac.t === "string" ? (ac.t as string).trim() : null,
   };
 }
 
@@ -172,6 +176,8 @@ async function fetchOpenSky(): Promise<Ac[] | null> {
       onGround: s[8] as boolean,
       velocity: s[9] as number | null,
       heading: s[10] as number | null,
+      reg: null,
+      acType: null,
     }));
   } catch {
     return null;

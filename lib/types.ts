@@ -57,6 +57,8 @@ export type Aircraft = {
   altM: number;
   velocity: number | null;
   heading: number | null;
+  reg?: string | null; // tail/registration (ADS-B feeds only)
+  acType?: string | null; // aircraft type code, e.g. "B738"
 };
 
 export type Launch = {

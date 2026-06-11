@@ -104,6 +104,7 @@ import {
   PlantView,
   StarView,
   MoonView,
+  AircraftView,
 } from "@/components/views";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
@@ -206,6 +207,7 @@ type Selection =
   | { kind: "plant"; plant: Plant }
   | { kind: "star"; star: Star }
   | { kind: "moon"; moon: Moon }
+  | { kind: "aircraft"; aircraft: Aircraft }
   | null;
 
 type Layers = Record<LayerKey, boolean>;
@@ -1991,6 +1993,15 @@ export default function LivingEarth() {
     }
   }
 
+  function selectAircraft(aircraft: Aircraft) {
+    setSelection({ kind: "aircraft", aircraft });
+    setNarration(null);
+    if (globeEl.current) {
+      const _c = globeEl.current.controls?.();
+      if (_c) _c.autoRotate = false;
+    }
+  }
+
   function selectRareBird(bird: RareBird) {
     setSelection({ kind: "rareBird", bird });
     setNarration(null);
@@ -2652,14 +2663,20 @@ export default function LivingEarth() {
                       ? 12
                       : 16;
               if (d.kind === "aircraft") {
-                const heading = (d._heading ?? 0) - 45;
+                const heading = d._heading ?? 0;
                 const tint =
                   (d.altM ?? 0) > 10000
                     ? "#ffe16a"
                     : (d.altM ?? 0) > 7500
                       ? "#fff5c2"
                       : "#ffffff";
-                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%) rotate(${heading}deg);font-size:${baseSize}px;line-height:1;cursor:pointer;user-select:none;color:${tint};text-shadow:0 0 3px rgba(0,0,0,0.9);transition:transform 200ms ease;will-change:transform;pointer-events:auto">✈</div>`;
+                const callsign = escape(
+                  ((d.callsign as string) || (d.icao as string) || "").trim(),
+                );
+                // SVG plane points north at 0°, so rotate by the true heading
+                // (no emoji NW-offset hack). Callsign sits below, hidden until
+                // hover so 500 planes don't clutter the globe.
+                el.innerHTML = `<div class="g-icon" title="${label}" style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;user-select:none;pointer-events:auto;transition:transform 200ms ease;will-change:transform"><svg viewBox="0 0 24 24" width="${baseSize}" height="${baseSize}" fill="${tint}" style="transform:rotate(${heading}deg);filter:drop-shadow(0 0 3px rgba(0,0,0,0.95))"><path d="M22 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S11 2.67 11 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/></svg><span class="cs-label" style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.04em;color:rgba(255,255,255,0.9);text-shadow:0 0 3px #000,0 0 2px #000;white-space:nowrap;opacity:0;transition:opacity 150ms ease">${callsign}</span></div>`;
               } else if (
                 (d.kind === "rareBird" || d.kind === "plant") &&
                 d._photo
@@ -2698,12 +2715,21 @@ export default function LivingEarth() {
               const inner = el.firstElementChild as HTMLDivElement;
               if (inner) {
                 if (d.kind === "aircraft") {
-                  const heading = (d._heading ?? 0) - 45;
+                  const csLabel = inner.querySelector(
+                    ".cs-label",
+                  ) as HTMLElement | null;
                   inner.addEventListener("mouseenter", () => {
-                    inner.style.transform = `translate(-50%,-50%) rotate(${heading}deg) scale(1.8)`;
+                    inner.style.transform = "translate(-50%,-50%) scale(1.7)";
+                    if (csLabel) csLabel.style.opacity = "1";
                   });
                   inner.addEventListener("mouseleave", () => {
-                    inner.style.transform = `translate(-50%,-50%) rotate(${heading}deg) scale(1)`;
+                    inner.style.transform = "translate(-50%,-50%) scale(1)";
+                    if (csLabel) csLabel.style.opacity = "0";
+                  });
+                  inner.addEventListener("pointerup", (ev) => {
+                    ev.stopPropagation();
+                    iconClickedAt.current = Date.now();
+                    selectAircraft(d as Aircraft);
                   });
                 } else {
                   inner.addEventListener("mouseenter", () => {
@@ -3130,6 +3156,13 @@ export default function LivingEarth() {
 
               {selection.kind === "ship" && (
                 <ShipView key={selection.ship.mmsi} ship={selection.ship} />
+              )}
+
+              {selection.kind === "aircraft" && (
+                <AircraftView
+                  key={selection.aircraft.icao}
+                  aircraft={selection.aircraft}
+                />
               )}
 
               {selection.kind === "rareBird" && (
