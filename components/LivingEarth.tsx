@@ -210,6 +210,37 @@ type Selection =
 
 type Layers = Record<LayerKey, boolean>;
 
+// Greedy, magnitude-priority spatial clustering. The largest quake in a
+// neighborhood becomes the "head" and absorbs nearby (smaller) quakes, so a
+// dense aftershock swarm renders as one marker — keyed by the mainshock —
+// instead of a blob of overlapping dots. The cluster radius scales with the
+// head magnitude (bigger quakes have wider aftershock zones).
+function clusterQuakes(quakes: Quake[]): Array<Quake & { clusterCount: number }> {
+  const sorted = [...quakes].sort((a, b) => b.mag - a.mag);
+  const used = new Array<boolean>(sorted.length).fill(false);
+  const heads: Array<Quake & { clusterCount: number }> = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (used[i]) continue;
+    const head = sorted[i];
+    used[i] = true;
+    const rKm = Math.min(160, 40 + head.mag * 15);
+    const cosLat = Math.cos((head.lat * Math.PI) / 180);
+    let count = 1;
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used[j]) continue;
+      const q = sorted[j];
+      const dLatKm = (q.lat - head.lat) * 111;
+      const dLngKm = (q.lng - head.lng) * 111 * cosLat;
+      if (Math.sqrt(dLatKm * dLatKm + dLngKm * dLngKm) <= rKm) {
+        used[j] = true;
+        count++;
+      }
+    }
+    heads.push({ ...head, clusterCount: count });
+  }
+  return heads;
+}
+
 export default function LivingEarth() {
   const globeEl = useRef<any>(null);
   const [globeReady, setGlobeReady] = useState(false);
@@ -1212,9 +1243,10 @@ export default function LivingEarth() {
       const sourceQuakes =
         mode.id === "timetravel" ? historicalQuakes : visibleQuakes;
       out.push(
-        // Ascending by magnitude so larger quakes are appended last and draw
-        // on top of the smaller-aftershock swarm that surrounds a mainshock.
-        ...[...sourceQuakes]
+        // Cluster dense swarms to a single mainshock-keyed marker, then sort
+        // ascending by magnitude so larger quakes are appended last and draw
+        // on top of any smaller neighbours.
+        ...clusterQuakes(sourceQuakes)
           .sort((a, b) => a.mag - b.mag)
           .map((q) => ({
             ...q,
@@ -2154,6 +2186,14 @@ export default function LivingEarth() {
     setLayers((l) => ({ ...l, [k]: !l[k] }));
   }
 
+  function clearLayers() {
+    setLayers((l) => {
+      const next = { ...l };
+      for (const k of Object.keys(next) as LayerKey[]) next[k] = false;
+      return next;
+    });
+  }
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
       <div
@@ -2377,8 +2417,12 @@ export default function LivingEarth() {
                 );
               }
               if (d.kind === "quake") {
+                const nearby =
+                  d.clusterCount > 1
+                    ? ` <span style="opacity:0.65">+${d.clusterCount - 1} nearby</span>`
+                    : "";
                 return tooltip(
-                  `🪨 <b>M${d.mag.toFixed(1)}</b>`,
+                  `🪨 <b>M${d.mag.toFixed(1)}</b>${nearby}`,
                   `${escape(d.place)}${d.depth != null ? ` · depth ${Math.round(d.depth)}km` : ""}`,
                 );
               }
@@ -2750,6 +2794,7 @@ export default function LivingEarth() {
         <LayerToggle
           layers={layers}
           toggle={toggleLayer}
+          onClearAll={clearLayers}
           mode={mode}
           loadingLayers={loadingLayers}
           onOpenRain={selectRain}
@@ -2800,12 +2845,22 @@ export default function LivingEarth() {
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">
                   Layers
                 </div>
-                <span
-                  className="text-[10px] uppercase tracking-[0.2em]"
-                  style={{ color: mode.accent }}
-                >
-                  {mode.label}
-                </span>
+                <div className="flex items-center gap-4">
+                  {Object.values(layers).some(Boolean) && (
+                    <button
+                      onClick={clearLayers}
+                      className="text-[10px] uppercase tracking-[0.15em] text-white/45 active:text-white py-1 cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <span
+                    className="text-[10px] uppercase tracking-[0.2em]"
+                    style={{ color: mode.accent }}
+                  >
+                    {mode.label}
+                  </span>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto scrollbar-thin px-3 pb-6">
                 <LayerToggle
@@ -2872,11 +2927,11 @@ export default function LivingEarth() {
       />
 
       <div className="pointer-events-none absolute bottom-6 left-6 z-10 text-[9px] tracking-widest text-white/30 uppercase leading-relaxed max-w-[440px] hidden md:block">
-        USGS · NASA EONET · OpenSky · ISS · Open Notify · iNaturalist ·
-        Open-Meteo · REST Countries · Wikipedia · Claude · NASA APOD · Launch
-        Library 2 · NOAA NHC · GDACS · NASA FIRMS · NOAA Tides · N2YO · GBIF ·
-        OBIS · NOAA SWPC · RainViewer · TeleGeography · USGS archive · eBird ·
-        AISStream · IUCN · NOAA GOES GLM
+        USGS · NASA EONET · ADSB.lol (ODbL) · OpenSky · ISS · Open Notify ·
+        iNaturalist · Open-Meteo · REST Countries · Wikipedia · Claude · NASA
+        APOD · Launch Library 2 · NOAA NHC · GDACS · NASA FIRMS · NOAA Tides ·
+        N2YO · GBIF · OBIS · NOAA SWPC · RainViewer · TeleGeography · USGS
+        archive · eBird · AISStream · IUCN · NOAA GOES GLM
         {firesTotal > 0 && (
           <>
             <br />
@@ -2943,7 +2998,7 @@ export default function LivingEarth() {
           <>
             <br />
             <span className="text-yellow-300/40 normal-case tracking-normal">
-              aircraft layer rate-limited by OpenSky · add OPENSKY_USER + OPENSKY_PASS for higher quota
+              aircraft layer unavailable · OpenSky throttles anonymous datacenter requests · set OPENSKY_CLIENT_ID + OPENSKY_CLIENT_SECRET
             </span>
           </>
         )}
@@ -3342,7 +3397,7 @@ const TIMETRAVEL_SUPPORTED: Set<LayerKey> = new Set([
   "terminator",
 ]);
 
-type LayerItem = { key: LayerKey; label: string; color: string };
+type LayerItem = { key: LayerKey; label: string; color: string; icon?: string };
 type LayerSection = { title: string; items: LayerItem[] };
 
 const LAYER_SECTIONS: LayerSection[] = [
@@ -3350,18 +3405,18 @@ const LAYER_SECTIONS: LayerSection[] = [
     title: "News",
     items: [
       { key: "news", label: "All news", color: "#cdd3dc" },
-      { key: "newsCrisis", label: "🚨 Crisis", color: "#ff5050" },
-      { key: "newsConflict", label: "⚔️ Conflict", color: "#ff7a30" },
-      { key: "newsPolitics", label: "🏛️ Politics", color: "#5fb7ff" },
-      { key: "newsEconomy", label: "📈 Economy", color: "#7af07a" },
-      { key: "newsHealth", label: "🏥 Health", color: "#d68fff" },
-      { key: "newsTech", label: "💻 Tech", color: "#7be4ff" },
+      { key: "newsCrisis", label: "Crisis", color: "#ff5050", icon: "🚨" },
+      { key: "newsConflict", label: "Conflict", color: "#ff7a30", icon: "⚔️" },
+      { key: "newsPolitics", label: "Politics", color: "#5fb7ff", icon: "🏛️" },
+      { key: "newsEconomy", label: "Economy", color: "#7af07a", icon: "📈" },
+      { key: "newsHealth", label: "Health", color: "#d68fff", icon: "🏥" },
+      { key: "newsTech", label: "Tech", color: "#7be4ff", icon: "💻" },
     ],
   },
   {
     title: "Sky",
     items: [
-      { key: "trueColor", label: "🌎 True-color Earth (NASA)", color: "#7be4ff" },
+      { key: "trueColor", label: "True-color Earth (NASA)", color: "#7be4ff", icon: "🌎" },
       { key: "iss", label: "ISS + crew", color: "#a3e8ff" },
       { key: "moon", label: "Moon", color: "#e0c3fc" },
       { key: "stars", label: "Bright stars", color: "#cdb4ff" },
@@ -3400,7 +3455,7 @@ const LAYER_SECTIONS: LayerSection[] = [
       { key: "wildlife", label: "Wildlife sightings", color: "#7ad36b" },
       { key: "cetaceans", label: "Whales & dolphins", color: "#7be4ff" },
       { key: "rareBirds", label: "Rare birds (eBird)", color: "#7ad36b" },
-      { key: "plants", label: "Rare plants 🌸", color: "#a8d68f" },
+      { key: "plants", label: "Rare plants", color: "#a8d68f", icon: "🌸" },
     ],
   },
   {
@@ -3417,6 +3472,7 @@ const LAYER_SECTIONS: LayerSection[] = [
 function LayerToggle({
   layers,
   toggle,
+  onClearAll,
   mode,
   loadingLayers,
   onOpenRain,
@@ -3425,6 +3481,7 @@ function LayerToggle({
 }: {
   layers: Layers;
   toggle: (k: LayerKey) => void;
+  onClearAll?: () => void;
   mode: Mode;
   loadingLayers: Record<string, boolean>;
   onOpenRain: () => void;
@@ -3432,83 +3489,134 @@ function LayerToggle({
   inline?: boolean;
 }) {
   const inTimeTravel = mode.id === "timetravel";
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const visibleSections = LAYER_SECTIONS.map((section) => ({
     ...section,
     items: inTimeTravel
       ? section.items.filter((it) => TIMETRAVEL_SUPPORTED.has(it.key))
       : section.items,
   })).filter((section) => section.items.length > 0);
+  const anyOn = Object.values(layers).some(Boolean);
 
   return (
     <div
       className={
         inline
           ? "text-xs"
-          : "absolute bottom-6 right-6 z-10 w-60 bg-zinc-950/85 backdrop-blur-xl border border-white/15 ring-1 ring-black/40 shadow-2xl shadow-black/70 rounded-xl p-3 text-xs max-h-[80vh] overflow-y-auto scrollbar-thin"
+          : "absolute bottom-6 right-6 z-10 w-60 bg-zinc-900 border border-white/25 ring-1 ring-white/10 shadow-2xl shadow-black/80 rounded-xl p-3 text-xs max-h-[80vh] overflow-y-auto scrollbar-thin"
       }
     >
       {!inline && (
         <div className="text-[10px] uppercase tracking-[0.2em] text-white/70 mb-2 pb-2 px-1 flex justify-between items-center border-b border-white/10">
           <span>Layers</span>
-          <span style={{ color: mode.accent }}>{mode.label}</span>
+          <div className="flex items-center gap-2.5">
+            {anyOn && onClearAll && (
+              <button
+                onClick={onClearAll}
+                className="text-white/45 hover:text-white tracking-[0.15em] cursor-pointer transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded"
+              >
+                Clear
+              </button>
+            )}
+            <span style={{ color: mode.accent }}>{mode.label}</span>
+          </div>
         </div>
       )}
       <div className="flex flex-col gap-3">
-        {visibleSections.map((section) => (
-          <div key={section.title}>
-            <div className="text-[9px] uppercase tracking-[0.25em] text-white/50 px-2 mb-1">
-              {section.title}
+        {visibleSections.map((section) => {
+          const isCollapsed = !!collapsed[section.title];
+          return (
+            <div key={section.title}>
+              <button
+                onClick={() =>
+                  setCollapsed((c) => ({
+                    ...c,
+                    [section.title]: !c[section.title],
+                  }))
+                }
+                aria-expanded={!isCollapsed}
+                className={`w-full flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/65 hover:text-white px-2 mb-1 cursor-pointer transition-colors rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 ${
+                  inline ? "py-1.5" : ""
+                }`}
+              >
+                <span>{section.title}</span>
+                <span
+                  aria-hidden
+                  className="text-white/40 transition-transform duration-200"
+                  style={{ transform: isCollapsed ? "rotate(0deg)" : "rotate(90deg)" }}
+                >
+                  ›
+                </span>
+              </button>
+              {!isCollapsed && (
+                <div className="flex flex-col gap-1">
+                  {section.items.map((it) => {
+                    const isLoading = !!loadingLayers[it.key];
+                    const isOn = !!layers[it.key];
+                    const showRainOpen =
+                      it.key === "rain" && layers.rain && rainAvailable;
+                    return (
+                      <div key={it.key} className="flex flex-col">
+                        <button
+                          onClick={() => toggle(it.key)}
+                          aria-pressed={isOn}
+                          className={`flex items-center gap-2 px-2 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset ${
+                            inline ? "py-2.5" : "py-1.5"
+                          } ${
+                            isOn
+                              ? "bg-white/15 text-white"
+                              : "text-white/75 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          <span
+                            className={`${inline ? "w-3 h-3" : "w-2.5 h-2.5"} rounded-full shrink-0 transition-shadow`}
+                            style={{
+                              background: isOn ? it.color : "transparent",
+                              border: `1.5px solid ${it.color}`,
+                              boxShadow: isOn ? `0 0 6px ${it.color}` : "none",
+                              opacity: isOn ? 1 : 0.7,
+                            }}
+                          />
+                          {it.icon && (
+                            <span
+                              aria-hidden
+                              className="w-4 text-center shrink-0 text-[11px] leading-none"
+                            >
+                              {it.icon}
+                            </span>
+                          )}
+                          <span className="flex-1 text-left">{it.label}</span>
+                          {isOn && !isLoading && (
+                            <span
+                              aria-hidden
+                              className="text-white/80 text-[11px] leading-none shrink-0"
+                            >
+                              ✓
+                            </span>
+                          )}
+                          {isLoading && (
+                            <span
+                              aria-label="loading"
+                              className="w-3 h-3 rounded-full border border-white/40 border-t-transparent animate-spin shrink-0"
+                            />
+                          )}
+                        </button>
+                        {showRainOpen && (
+                          <button
+                            onClick={onOpenRain}
+                            className="mt-0.5 ml-6 mb-0.5 text-[10px] uppercase tracking-[0.2em] text-cyan-300/70 hover:text-cyan-200 cursor-pointer text-left"
+                          >
+                            Open radar →
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <div className="flex flex-col gap-1">
-              {section.items.map((it) => {
-                const isLoading = !!loadingLayers[it.key];
-                const showRainOpen =
-                  it.key === "rain" && layers.rain && rainAvailable;
-                return (
-                  <div key={it.key} className="flex flex-col">
-                    <button
-                      onClick={() => toggle(it.key)}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer ${
-                        layers[it.key]
-                          ? "bg-white/10 text-white"
-                          : "text-white/55 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 transition-shadow"
-                        style={{
-                          background: layers[it.key]
-                            ? it.color
-                            : "transparent",
-                          border: `1.5px solid ${it.color}`,
-                          boxShadow: layers[it.key]
-                            ? `0 0 6px ${it.color}`
-                            : "none",
-                          opacity: layers[it.key] ? 1 : 0.7,
-                        }}
-                      />
-                      <span className="flex-1 text-left">{it.label}</span>
-                      {isLoading && (
-                        <span
-                          aria-label="loading"
-                          className="w-3 h-3 rounded-full border border-white/40 border-t-transparent animate-spin shrink-0"
-                        />
-                      )}
-                    </button>
-                    {showRainOpen && (
-                      <button
-                        onClick={onOpenRain}
-                        className="mt-0.5 ml-6 mb-0.5 text-[10px] uppercase tracking-[0.2em] text-cyan-300/70 hover:text-cyan-200 cursor-pointer text-left"
-                      >
-                        Open radar →
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {inTimeTravel && (
         <div className="mt-3 px-1 text-[9px] uppercase tracking-[0.2em] text-amber-200/60 leading-relaxed">

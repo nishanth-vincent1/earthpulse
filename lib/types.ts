@@ -32,6 +32,9 @@ export type Quake = {
   nst?: number | null;
   source?: "usgs" | "emsc";
   agency?: string | null;
+  // Number of quakes represented by this marker after spatial clustering
+  // (1 = a lone quake; >1 = a mainshock/swarm head with nearby aftershocks).
+  clusterCount?: number;
 };
 
 export type EONETEvent = {

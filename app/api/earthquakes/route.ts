@@ -155,12 +155,16 @@ async function fetchEMSC(): Promise<Quake[]> {
 
 function dedupe(a: Quake[], b: Quake[]): Quake[] {
   // Prefer USGS when both report the same event.
-  // Two quakes are the "same" if within ~80km AND ~3min AND magnitude within 0.5.
+  // Two quakes are the "same" if within ~80km AND ~2min AND magnitude within 1.0.
+  // Origin times from two agencies agree within seconds, so a tight 2-min window
+  // avoids merging genuinely distinct close-in-time events; the magnitude window
+  // is wide (1.0) because agencies routinely disagree on magnitude type/value
+  // for the same event (e.g. USGS Mww vs EMSC mb).
   const result: Quake[] = [...a];
   for (const q of b) {
     const dup = a.find((u) => {
       const dt = Math.abs(u.time - q.time);
-      if (dt > 3 * 60_000) return false;
+      if (dt > 2 * 60_000) return false;
       const dLat = Math.abs(u.lat - q.lat);
       const dLng = Math.abs(u.lng - q.lng);
       if (dLat > 1.5 || dLng > 1.5) return false;
@@ -170,7 +174,7 @@ function dedupe(a: Quake[], b: Quake[]): Quake[] {
       const dLngKm = dLng * 111 * Math.cos((u.lat * Math.PI) / 180);
       const km = Math.sqrt(dLatKm * dLatKm + dLngKm * dLngKm);
       if (km > 80) return false;
-      if (Math.abs(u.mag - q.mag) > 0.5) return false;
+      if (Math.abs(u.mag - q.mag) > 1.0) return false;
       return true;
     });
     if (!dup) result.push(q);

@@ -165,6 +165,11 @@ export function QuakeView({ quake }: { quake: Quake }) {
       : quake.mag >= 4
         ? "text-orange-300"
         : "text-amber-200";
+  const magColor =
+    quake.mag >= 6 ? "#ff3030" : quake.mag >= 4 ? "#ff7a30" : "#ffba30";
+  const nearby = quake.clusterCount && quake.clusterCount > 1
+    ? quake.clusterCount - 1
+    : 0;
 
   const alert = quake.alert ? ALERT_META[quake.alert] : null;
   const shake = quake.mmi ?? quake.cdi ?? null;
@@ -181,7 +186,18 @@ export function QuakeView({ quake }: { quake: Quake }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <div className="text-5xl mb-2">🪨</div>
+      <div
+        className="flex items-center justify-center w-16 h-16 rounded-full mb-3 font-light text-xl tabular-nums"
+        style={{
+          color: magColor,
+          background: `${magColor}1f`,
+          border: `1.5px solid ${magColor}`,
+          boxShadow: `0 0 18px ${magColor}55`,
+        }}
+        aria-hidden
+      >
+        {quake.mag.toFixed(1)}
+      </div>
       <div className={`text-xs uppercase tracking-[0.25em] ${sevColor}`}>
         {sev} earthquake · M{quake.mag.toFixed(1)}
         {quake.magType ? ` (${quake.magType})` : ""}
@@ -190,6 +206,11 @@ export function QuakeView({ quake }: { quake: Quake }) {
         {quake.place}
       </h2>
       <div className="text-white/50 text-sm mt-1">{timeAgo(quake.time)}</div>
+      {nearby > 0 && (
+        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] tracking-widest uppercase text-white/65">
+          +{nearby} nearby quake{nearby > 1 ? "s" : ""} clustered here
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2 mt-3">
         {quake.tsunami && (
